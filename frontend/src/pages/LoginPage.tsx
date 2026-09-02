@@ -55,47 +55,43 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col justify-center items-center p-4 relative overflow-hidden">
-      {/* Background Subtle Accent Gradients */}
-      <div className="absolute -top-40 -left-40 w-96 h-96 bg-sky-600/10 rounded-full blur-3xl"></div>
-      <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl"></div>
-
+    <div className="min-h-screen bg-gradient-to-br from-[#F4F7F2] via-[#F9FAF7] to-[#EDF3EC] flex flex-col justify-center items-center p-4 relative overflow-hidden">
       <div className="max-w-md w-full space-y-6 relative z-10">
         {/* Emblem & Portal Identity */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gov-blue border border-sky-400/40 shadow-xl shadow-sky-950 mb-2">
-            <Shield className="w-8 h-8 text-sky-400" />
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-forest-900 text-white shadow-xl mb-2">
+            <Shield className="w-8 h-8 text-emerald-300" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">
-            LandGuard <span className="text-sky-400">AI</span>
+          <h1 className="text-2xl font-extrabold tracking-tight text-forest-950 bg-transparent">
+            LandGuard <span className="text-forest-700">AI</span>
           </h1>
-          <p className="text-xs text-sky-300 font-semibold uppercase tracking-widest">
+          <p className="text-xs text-slate-600 font-bold uppercase tracking-widest bg-transparent">
             Ministry of Rural Development • Department of Land Resources (DoLR)
           </p>
-          <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-[11px] text-slate-300">
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs text-slate-700 shadow-2xs">
             <span>Smart India Hackathon 2026</span>
             <span>•</span>
-            <span className="font-mono text-sky-400 font-semibold">SIH26017</span>
+            <span className="font-mono text-forest-800 font-bold">SIH26017</span>
           </div>
         </div>
 
         {/* Login Box */}
-        <div className="bg-white rounded-2xl shadow-2xl p-6 space-y-5 border border-slate-200">
+        <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-7 space-y-5 border border-slate-200">
           <div>
-            <h2 className="text-base font-bold text-slate-900">Official Portal Login</h2>
-            <p className="text-xs text-slate-500">Enter authorized government email and security credentials</p>
+            <h2 className="text-lg font-extrabold text-forest-950 bg-transparent">Official Portal Login</h2>
+            <p className="text-xs text-slate-600 bg-transparent">Enter authorized government email and security credentials</p>
           </div>
 
           {error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 flex items-start space-x-2">
-              <AlertCircle className="w-4 h-4 text-rose-500 mt-0.5 shrink-0" />
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start space-x-2">
+              <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Official Email Address</label>
+              <label className="block font-bold text-slate-800 mb-1 bg-transparent">Official Email Address</label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
@@ -103,13 +99,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:ring-2 focus:ring-sky-500 focus:outline-hidden"
+                  className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 focus:ring-2 focus:ring-forest-700 focus:border-forest-700 focus:outline-none text-xs font-medium"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block font-semibold text-slate-700 mb-1">Password</label>
+              <label className="block font-bold text-slate-800 mb-1 bg-transparent">Password</label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                 <input
@@ -117,7 +113,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-slate-900 focus:ring-2 focus:ring-sky-500 focus:outline-hidden"
+                  className="w-full pl-9 pr-3 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 focus:ring-2 focus:ring-forest-700 focus:border-forest-700 focus:outline-none text-xs font-medium"
                 />
               </div>
             </div>
@@ -125,17 +121,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-bold text-xs transition shadow-md flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
+              className="w-full py-3 bg-forest-900 hover:bg-forest-950 text-white rounded-xl font-bold text-xs transition shadow-md flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
             >
               <span>{loading ? 'Authenticating...' : 'Sign In to Portal'}</span>
-              <ArrowRight className="w-4 h-4 text-sky-400" />
+              <ArrowRight className="w-4 h-4 text-emerald-300" />
             </button>
           </form>
 
-          {/* Quick Demo Logins for Judges */}
+          {/* Quick Demo Logins */}
           <div className="pt-4 border-t border-slate-100 space-y-2">
-            <p className="text-[11px] font-bold text-slate-700 uppercase tracking-wider text-center">
-              ⚡ Quick Demo Login for SIH Judges
+            <p className="text-[11px] font-bold text-slate-700 uppercase tracking-wider text-center bg-transparent">
+              ⚡ Quick Demo Login
             </p>
             <div className="space-y-1.5">
               {DEMO_ACCOUNTS.map((acc) => (
@@ -143,16 +139,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
                   key={acc.role}
                   type="button"
                   onClick={() => handleQuickLogin(acc)}
-                  className="w-full text-left p-2 rounded-lg bg-slate-50 hover:bg-sky-50/70 border border-slate-200 hover:border-sky-300 transition flex items-center justify-between text-xs group cursor-pointer"
+                  className="w-full text-left p-2.5 rounded-xl bg-white hover:bg-forest-50/60 border border-slate-200 hover:border-forest-600/40 transition flex items-center justify-between text-xs group cursor-pointer"
                 >
                   <div>
                     <div className="flex items-center space-x-1.5">
-                      <span className="font-bold text-slate-900 group-hover:text-sky-700">{acc.role}</span>
-                      <span className="text-[10px] text-slate-400">• {acc.name}</span>
+                      <span className="font-bold text-slate-900 group-hover:text-forest-900 bg-transparent">{acc.role}</span>
+                      <span className="text-[10px] text-slate-500 bg-transparent">• {acc.name}</span>
                     </div>
-                    <p className="text-[10px] text-slate-500">{acc.desc}</p>
+                    <p className="text-[10px] text-slate-500 bg-transparent">{acc.desc}</p>
                   </div>
-                  <UserCheck className="w-4 h-4 text-slate-400 group-hover:text-sky-600" />
+                  <UserCheck className="w-4 h-4 text-slate-400 group-hover:text-forest-700" />
                 </button>
               ))}
             </div>
@@ -160,8 +156,8 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
         </div>
 
         {/* Real-World Honesty Notice */}
-        <p className="text-center text-[11px] text-slate-500 max-w-sm mx-auto">
-          Demonstration Dataset: Predictions are for demonstration purposes under SIH26017 and should not be used as official administrative decisions.
+        <p className="text-center text-[11px] text-slate-500 max-w-sm mx-auto bg-transparent">
+          Demonstration Dataset: Predictions are for presentation purposes under SIH26017.
         </p>
       </div>
     </div>

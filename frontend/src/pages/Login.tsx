@@ -99,69 +99,69 @@ export const Login: React.FC<LoginProps> = ({
 
   return (
     <div
-      className={`min-h-screen font-sans antialiased selection:bg-forest-100 selection:text-forest-900 transition-colors duration-300 ${
+      className={`min-h-screen font-sans antialiased transition-colors duration-300 ${
         showPhoneFrame
-          ? 'bg-slate-950 sm:py-6 flex items-center justify-center'
-          : 'bg-app-bg flex flex-col'
+          ? 'bg-slate-950 sm:py-6 flex items-center justify-center p-2 sm:p-4'
+          : 'bg-gradient-to-br from-[#F4F7F2] via-[#F9FAF7] to-[#EDF3EC] flex flex-col justify-center items-center p-4'
       }`}
     >
       {/* Floating Phone Frame ON / OFF Toggle Button */}
       {onTogglePhoneFrame && (
         <button
           onClick={onTogglePhoneFrame}
+          type="button"
           className="fixed top-3 right-3 z-50 hidden sm:flex items-center space-x-2 bg-slate-900/90 hover:bg-slate-800 text-white px-3.5 py-1.5 rounded-full text-xs font-bold border border-slate-700 shadow-2xl backdrop-blur-md cursor-pointer transition active:scale-95"
           title="Toggle Phone Frame ON / OFF"
         >
-          {showPhoneFrame ? (
-            <>
-              <Smartphone className="w-4 h-4 text-forest-400" />
-              <span className="text-slate-200">Phone Frame:</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-forest-600 text-white">
-                ON
-              </span>
-            </>
-          ) : (
-            <>
-              <Smartphone className="w-4 h-4 text-slate-400" />
-              <span className="text-slate-200">Phone Frame:</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-slate-700 text-slate-300">
-                OFF (Full Screen)
-              </span>
-            </>
-          )}
+          <Smartphone className="w-4 h-4 text-emerald-400" />
+          <span className="text-slate-200">Phone Frame:</span>
+          <span
+            className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase ${
+              showPhoneFrame ? 'bg-forest-700 text-white' : 'bg-slate-700 text-slate-300'
+            }`}
+          >
+            {showPhoneFrame ? 'ON' : 'OFF'}
+          </span>
         </button>
       )}
 
       {/* Main Login Container */}
       <div
-        className={`w-full bg-app-bg flex flex-col justify-between relative transition-all duration-300 ${
+        className={`w-full bg-gradient-to-br from-[#F5F8F3] via-[#FAFCF9] to-[#EEF4EC] flex flex-col justify-between relative transition-all duration-300 ${
           showPhoneFrame
-            ? 'sm:max-w-[430px] min-h-screen sm:min-h-[880px] sm:max-h-[920px] sm:rounded-[40px] sm:border-[8px] sm:border-slate-800 shadow-2xl overflow-hidden p-5'
-            : 'min-h-screen max-w-md mx-auto p-6 sm:p-8 rounded-none border-0 shadow-none'
+            ? 'sm:max-w-[440px] min-h-screen sm:min-h-[860px] sm:max-h-[920px] sm:rounded-[36px] sm:border-[8px] sm:border-slate-800 shadow-2xl overflow-y-auto p-5 sm:p-6'
+            : 'max-w-md mx-auto p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-2xl my-auto'
         }`}
       >
-
         {/* Brand Header */}
-        <div className="text-center space-y-1.5 pt-4">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-forest-900 text-white shadow-md mb-1">
-            <Shield className="w-6 h-6 text-forest-100" />
+        <div className="text-center pt-2 pb-1">
+          <div className="inline-flex items-center justify-center w-13 h-13 rounded-2xl bg-forest-900 text-white shadow-lg shadow-forest-900/20 mb-3.5 ring-4 ring-forest-900/10">
+            <Shield className="w-7 h-7 text-emerald-300" />
           </div>
-          <h1 className="text-xl font-extrabold tracking-tight text-forest-950">
+          
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-forest-950 bg-transparent">
             Welcome Back!
           </h1>
-          <p className="text-xs text-slate-500 max-w-[280px] mx-auto leading-relaxed">
-            Sign in to monitor your projects and manage acquisition risks.
+          
+          <p className="text-xs sm:text-sm text-slate-600 max-w-[300px] mx-auto leading-relaxed mt-1.5 bg-transparent font-normal">
+            Sign in to monitor your projects and manage acquisition risks with LandGuard AI.
           </p>
         </div>
 
         {/* Scrollable Form Body */}
-        <div className="my-auto py-2 space-y-4">
-          {/* Role Selection Cards with Green Highlighted Border */}
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
-              Select Role
-            </label>
-            <div className="grid grid-cols-2 gap-2">
+        <div className="my-auto py-3 space-y-5">
+          {/* Role Selection 2-Column Grid */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-slate-700 bg-transparent block">
+                Select Your Role
+              </label>
+              <span className="text-[10px] text-slate-500 font-medium bg-transparent">
+                Demonstration Profile
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2.5">
               {ROLE_OPTIONS.map((r) => {
                 const isSelected = selectedRole.role === r.role;
                 return (
@@ -169,78 +169,93 @@ export const Login: React.FC<LoginProps> = ({
                     key={r.role}
                     type="button"
                     onClick={() => handleSelectRole(r)}
-                    className={`p-2.5 rounded-2xl border text-left transition cursor-pointer relative ${
+                    className={`p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer relative flex flex-col justify-between ${
                       isSelected
-                        ? 'border-forest-700 bg-forest-50/80 ring-2 ring-forest-600/20 shadow-xs'
-                        : 'border-app-border bg-white hover:bg-slate-50'
+                        ? 'border-forest-700 bg-[#F0FAF4] shadow-xs ring-1 ring-forest-700/30'
+                        : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50/50'
                     }`}
                   >
-                    <div className="flex justify-between items-center">
-                      <span className={`text-[11px] font-bold ${isSelected ? 'text-forest-950' : 'text-slate-800'}`}>
+                    <div className="flex items-start justify-between gap-1 w-full">
+                      <span
+                        className={`text-xs font-bold leading-tight bg-transparent ${
+                          isSelected ? 'text-forest-950' : 'text-slate-800'
+                        }`}
+                      >
                         {r.title}
                       </span>
                       {isSelected && (
-                        <CheckCircle2 className="w-3 h-3 text-forest-700 shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-forest-700 shrink-0 mt-0.5" />
                       )}
                     </div>
-                    <p className="text-[9px] text-slate-400 mt-0.5 truncate">{r.desc}</p>
+                    <p className="text-[10px] text-slate-500 mt-1 truncate bg-transparent font-normal">
+                      {r.desc}
+                    </p>
                   </button>
                 );
               })}
             </div>
           </div>
 
-          {/* Login Form */}
-          <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-4 border border-app-border shadow-card space-y-3 text-xs">
+          {/* Form Card */}
+          <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm space-y-4">
             {error && (
-              <div className="p-2 bg-red-50 border border-red-200 rounded-xl text-xs text-risk-high">
+              <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-medium">
                 {error}
               </div>
             )}
 
-            <div>
-              <label className="font-bold text-slate-700 block mb-1">Official Email</label>
+            {/* Official Email */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-800 block bg-transparent">
+                Official Email
+              </label>
               <div className="relative">
-                <Mail className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
                 <input
                   type="email"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:ring-2 focus:ring-forest-700 focus:outline-hidden font-medium text-xs"
+                  placeholder="district.officer@landguard.gov.in"
+                  className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 text-xs font-medium focus:bg-white focus:border-forest-700 focus:ring-2 focus:ring-forest-700/20 focus:outline-none transition-all"
                 />
               </div>
             </div>
 
-            <div>
-              <label className="font-bold text-slate-700 block mb-1">Password</label>
+            {/* Password */}
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-800 block bg-transparent">
+                Password
+              </label>
               <div className="relative">
-                <Lock className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
+                <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
                 <input
                   type="password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 focus:bg-white focus:ring-2 focus:ring-forest-700 focus:outline-hidden font-medium text-xs"
+                  placeholder="••••••••••••"
+                  className="w-full pl-10 pr-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-slate-900 placeholder:text-slate-400 text-xs font-medium focus:bg-white focus:border-forest-700 focus:ring-2 focus:ring-forest-700/20 focus:outline-none transition-all"
                 />
               </div>
             </div>
 
-            <div className="flex justify-between items-center text-[11px] pt-0.5">
-              <label className="flex items-center space-x-1.5 cursor-pointer">
+            {/* Remember Me & Forgot Password */}
+            <div className="flex justify-between items-center text-xs pt-0.5">
+              <label className="flex items-center space-x-2 cursor-pointer bg-transparent">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-3.5 h-3.5 rounded text-forest-900 focus:ring-forest-700 border-slate-300"
+                  className="w-4 h-4 rounded text-forest-800 focus:ring-forest-700 border-slate-300 cursor-pointer accent-forest-800"
                 />
-                <span className="text-slate-600 font-medium">Remember Me</span>
+                <span className="text-slate-700 font-medium bg-transparent">Remember Me</span>
               </label>
 
               <button
                 type="button"
                 onClick={() => alert("Password reset assistance dispatched to official email.")}
-                className="font-bold text-forest-800 hover:underline"
+                className="font-bold text-forest-800 hover:text-forest-950 hover:underline bg-transparent cursor-pointer"
               >
                 Forgot Password?
               </button>
@@ -250,15 +265,16 @@ export const Login: React.FC<LoginProps> = ({
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-2.5 bg-forest-900 hover:bg-forest-950 text-white rounded-xl font-bold text-xs transition shadow-xs flex items-center justify-center space-x-1 cursor-pointer"
+              className="w-full py-3 bg-forest-900 hover:bg-forest-950 active:scale-[0.99] text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-70 mt-1"
             >
-              <span>{loading ? 'Signing In...' : 'Sign In →'}</span>
+              <span>{loading ? 'Signing In...' : 'Sign In'}</span>
+              <ArrowRight className="w-4 h-4 text-emerald-300" />
             </button>
 
             {/* Divider */}
-            <div className="relative flex items-center justify-center my-1">
+            <div className="relative flex items-center justify-center my-2">
               <div className="border-t border-slate-200 w-full" />
-              <span className="bg-white px-2 text-[9px] font-bold text-slate-400 uppercase tracking-widest relative">
+              <span className="bg-white px-2.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest relative">
                 OR
               </span>
             </div>
@@ -267,24 +283,26 @@ export const Login: React.FC<LoginProps> = ({
             <button
               type="button"
               onClick={onEnterDemoMode}
-              className="w-full py-2 bg-forest-50 hover:bg-forest-100 text-forest-900 border border-forest-200 rounded-xl font-bold text-xs transition flex items-center justify-center space-x-1.5 cursor-pointer"
+              className="w-full py-2.5 bg-white hover:bg-forest-50/60 active:scale-[0.99] text-forest-900 border-2 border-forest-700/40 hover:border-forest-700/70 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-2xs"
             >
-              <Sparkles className="w-3.5 h-3.5 text-forest-700" />
-              <span>Demo Mode</span>
+              <Sparkles className="w-4 h-4 text-forest-700" />
+              <span>Enter Demo Mode</span>
             </button>
           </form>
 
-          <p className="text-center text-[10px] text-slate-400">
-            Demo credentials are for presentation only.
+          <p className="text-center text-[10px] text-slate-500 bg-transparent">
+            Demo credentials are pre-loaded for SIH presentation.
           </p>
         </div>
 
-        {/* Real-World Honesty Footer */}
-        <p className="text-center text-[9px] text-slate-400 pb-2">
-          Ministry of Rural Development • DoLR • SIH26017
-        </p>
-
+        {/* Footer */}
+        <div className="text-center pt-2 pb-1 border-t border-slate-200/60">
+          <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-transparent">
+            Ministry of Rural Development • DoLR • SIH26017
+          </p>
+        </div>
       </div>
     </div>
   );
 };
+
