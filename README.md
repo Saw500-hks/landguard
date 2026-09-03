@@ -85,6 +85,46 @@ LandGuard AI implements five granular user roles tailored for administrative hie
 
 ## 🤖 AI / ML Pipeline & Explainable AI (XAI)
 
+### 🔄 End-to-End Data & ML Pipeline Flow
+
+```
+Historical / Demonstration Data
+            ↓
+Data Cleaning & Validation
+            ↓
+Feature Engineering
+            ↓
+Risk Factor Analysis
+            ↓
+Multiple ML Models
+            ↓
+Model Evaluation & Selection
+            ↓
+Delay Risk Prediction
+            ↓
+Explainable AI (XAI)
+            ↓
+Recommendations & Alerts
+            ↓
+FastAPI Backend
+            ↓
+LandGuard AI Interface
+```
+
+```mermaid
+graph TD
+    A["Historical / Demonstration Data"] --> B["Data Cleaning & Validation"]
+    B --> C["Feature Engineering"]
+    C --> D["Risk Factor Analysis"]
+    D --> E["Multiple ML Models"]
+    E --> F["Model Evaluation & Selection"]
+    F --> G["Delay Risk Prediction"]
+    G --> H["Explainable AI (XAI)"]
+    H --> I["Recommendations & Alerts"]
+    I --> J["FastAPI Backend"]
+    J --> K["LandGuard AI Interface"]
+```
+
 ### 1. Multi-Model Architecture
 - **Baseline Classifier:** L2 Regularized Logistic Regression.
 - **Ensemble Classifier:** Multi-Tree Random Forest (120 estimators, depth-calibrated).
