@@ -3,5 +3,8 @@
     "@supabase/server": "^1.5.3",
     "@supabase/ssr": "^0.12.5",
     "@supabase/supabase-js": "^2.114.0"
+  },
+  "devDependencies": {
+    "prisma": "^8.0.0-rc.12"
   }
 }

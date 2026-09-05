@@ -6,24 +6,25 @@ from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.impute import SimpleImputer
 
 NUMERIC_FEATURES = [
-    "land_area_hectares",
-    "affected_families",
-    "compensation_percentage",
+    "original_cost",
+    "revised_cost",
+    "expenditure",
+    "physical_progress",
+    "land_acquisition_progress",
+    "compensation_delay_days",
+    "legal_cases_count",
     "approval_delay_days",
-    "legal_disputes_count",
-    "possession_percentage",
-    "rehabilitation_percentage",
-    "historical_district_delay_score"
+    "document_completion_percentage",
+    "cost_overrun_pct",
+    "expenditure_ratio"
 ]
 
 CATEGORICAL_FEATURES = [
-    "documentation_complete",
-    "notification_complete",
-    "project_type",
-    "current_stage",
-    "stakeholder_responsiveness",
+    "sector",
     "state"
 ]
+
+ALL_13_FEATURES = CATEGORICAL_FEATURES + NUMERIC_FEATURES
 
 def build_preprocessor() -> ColumnTransformer:
     numeric_transformer = Pipeline(steps=[
@@ -44,3 +45,4 @@ def build_preprocessor() -> ColumnTransformer:
         remainder="drop"
     )
     return preprocessor
+

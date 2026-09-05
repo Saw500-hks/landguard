@@ -1,6 +1,7 @@
 import {
   User, Project, DashboardData, GISFeature, ModelStatus,
-  Alert, Recommendation, AuditLog, Prediction
+  Alert, Recommendation, AuditLog, Prediction,
+  SupportTicket, SupportConfig, SupportTicketCreate, SupportTicketStatusResponse
 } from '../types';
 
 const API_BASE = '/api';
@@ -211,5 +212,219 @@ export const api = {
       method: 'POST',
       body: formData
     });
+  },
+
+  // Support & Helpline
+  getSupportConfig: async (): Promise<SupportConfig> => {
+    try {
+      return await request<SupportConfig>('/support/config');
+    } catch {
+      const saved = localStorage.getItem('landguard_support_config');
+      if (saved) {
+        try { return JSON.parse(saved); } catch {}
+      }
+      return {
+        support_phone: '+91 XXXXX XXXXX',
+        support_email: 'support@landguard.ai',
+        support_hours: 'Monday–Saturday | 9:00 AM–6:00 PM'
+      };
+    }
+  },
+
+  submitSupportTicket: async (data: SupportTicketCreate): Promise<{ ticket_id: string; message: string }> => {
+    try {
+      return await request<{ ticket_id: string; message: string }>('/support/tickets', {
+        method: 'POST',
+        body: JSON.stringify(data)
+      });
+    } catch {
+      // Local fallback for offline/preview mode
+      const count = parseInt(localStorage.getItem('landguard_ticket_count') || '1', 10);
+      const nextNum = String(count).padStart(4, '0');
+      const ticketId = `#LG-2026-${nextNum}`;
+      localStorage.setItem('landguard_ticket_count', String(count + 1));
+
+      const newTicket: SupportTicket = {
+        id: count,
+        ticket_id: ticketId,
+        full_name: data.full_name,
+        email: data.email,
+        phone: data.phone,
+        category: data.category,
+        subject: data.subject,
+        description: data.description,
+        status: 'Request Received',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      };
+
+      const existingStr = localStorage.getItem('landguard_support_tickets') || '[]';
+      const tickets: SupportTicket[] = JSON.parse(existingStr);
+      tickets.unshift(newTicket);
+      localStorage.setItem('landguard_support_tickets', JSON.stringify(tickets));
+
+      return {
+        ticket_id: ticketId,
+        message: `Your support request has been submitted successfully. Your Ticket ID is ${ticketId}. Our support team will contact you soon.`
+      };
+    }
+  },
+
+  checkTicketStatus: async (ticketId: string): Promise<SupportTicketStatusResponse> => {
+    const cleanId = ticketId.startsWith('#') ? ticketId : `#${ticketId}`;
+    try {
+      return await request<SupportTicketStatusResponse>(`/support/tickets/${encodeURIComponent(cleanId)}/status`);
+    } catch {
+      const existingStr = localStorage.getItem('landguard_support_tickets') || '[]';
+      const tickets: SupportTicket[] = JSON.parse(existingStr);
+      const found = tickets.find(t => t.ticket_id.toLowerCase() === cleanId.toLowerCase());
+      if (found) {
+        return {
+          ticket_id: found.ticket_id,
+          status: found.status,
+          category: found.category,
+          subject: found.subject,
+          created_at: found.created_at,
+          updated_at: found.updated_at,
+          admin_response: found.admin_response
+        };
+      }
+      throw new Error(`No ticket found with ID ${ticketId}`);
+    }
+  },
+
+  getAdminTickets: async (filters?: {
+    search?: string;
+    category?: string;
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<SupportTicket[]> => {
+    const sp = new URLSearchParams();
+    if (filters?.search) sp.set('search', filters.search);
+    if (filters?.category) sp.set('category', filters.category);
+    if (filters?.status) sp.set('status', filters.status);
+    if (filters?.limit) sp.set('limit', filters.limit.toString());
+    if (filters?.offset) sp.set('offset', filters.offset.toString());
+    const qs = sp.toString() ? `?${sp.toString()}` : '';
+
+    try {
+      return await request<SupportTicket[]>(`/support/admin/tickets${qs}`);
+    } catch {
+      const existingStr = localStorage.getItem('landguard_support_tickets') || '[]';
+      let tickets: SupportTicket[] = JSON.parse(existingStr);
+
+      if (tickets.length === 0) {
+        // Seed default demo tickets
+        tickets = [
+          {
+            id: 1,
+            ticket_id: '#LG-2026-0001',
+            full_name: 'Rajesh Kumar',
+            email: 'rajesh.kumar@example.com',
+            phone: '+91 98765 43210',
+            category: 'Land Records',
+            subject: 'Discrepancy in Survey No 142 area calculation',
+            description: 'The Khasra document shows 2.4 hectares while on-ground survey measured 2.15 hectares.',
+            status: 'Support Team Assigned',
+            assigned_to: 'Field Officer Verma',
+            created_at: new Date(Date.now() - 86400000 * 2).toISOString(),
+            updated_at: new Date(Date.now() - 86400000 * 1).toISOString(),
+            admin_response: 'Revenue inspector assigned to conduct boundary re-verification on Thursday.'
+          },
+          {
+            id: 2,
+            ticket_id: '#LG-2026-0002',
+            full_name: 'Priya Sharma',
+            email: 'priya.sharma@example.com',
+            phone: '+91 91234 56789',
+            category: 'Application Delay',
+            subject: 'Mutation certificate delay beyond 30-day statutory SLA',
+            description: 'Application was submitted on Jan 15th with acknowledgment ref MUT-2026-8988. Still pending approval.',
+            status: 'Under Review',
+            assigned_to: 'Tehsildar Office',
+            created_at: new Date(Date.now() - 86400000 * 4).toISOString(),
+            updated_at: new Date(Date.now() - 86400000 * 3).toISOString()
+          },
+          {
+            id: 3,
+            ticket_id: '#LG-2026-0003',
+            full_name: 'Amit Patel',
+            email: 'amit.patel@example.com',
+            phone: '+91 99887 76655',
+            category: 'Document Problems',
+            subject: 'Missing Encumbrance Certificate verification',
+            description: 'Need assistance verifying Form 15 non-encumbrance status for NH-48 parcel.',
+            status: 'Resolved',
+            admin_response: 'EC certified copy has been verified against sub-registrar database and updated.',
+            created_at: new Date(Date.now() - 86400000 * 7).toISOString(),
+            updated_at: new Date(Date.now() - 86400000 * 5).toISOString()
+          }
+        ];
+        localStorage.setItem('landguard_support_tickets', JSON.stringify(tickets));
+      }
+
+      if (filters?.search) {
+        const s = filters.search.toLowerCase();
+        tickets = tickets.filter(t => 
+          t.full_name.toLowerCase().includes(s) ||
+          t.email.toLowerCase().includes(s) ||
+          t.ticket_id.toLowerCase().includes(s) ||
+          t.subject.toLowerCase().includes(s)
+        );
+      }
+      if (filters?.category) {
+        tickets = tickets.filter(t => t.category === filters.category);
+      }
+      if (filters?.status) {
+        tickets = tickets.filter(t => t.status === filters.status);
+      }
+
+      return tickets;
+    }
+  },
+
+  updateAdminTicket: async (
+    ticketId: string,
+    update: { status?: string; admin_response?: string; assigned_to?: string }
+  ): Promise<SupportTicket> => {
+    const cleanId = ticketId.startsWith('#') ? ticketId : `#${ticketId}`;
+    try {
+      return await request<SupportTicket>(`/support/admin/tickets/${encodeURIComponent(cleanId)}`, {
+        method: 'PUT',
+        body: JSON.stringify(update)
+      });
+    } catch {
+      const existingStr = localStorage.getItem('landguard_support_tickets') || '[]';
+      const tickets: SupportTicket[] = JSON.parse(existingStr);
+      const index = tickets.findIndex(t => t.ticket_id.toLowerCase() === cleanId.toLowerCase());
+      if (index === -1) throw new Error(`Ticket ${ticketId} not found`);
+
+      if (update.status) tickets[index].status = update.status;
+      if (update.admin_response !== undefined) tickets[index].admin_response = update.admin_response;
+      if (update.assigned_to !== undefined) tickets[index].assigned_to = update.assigned_to;
+      tickets[index].updated_at = new Date().toISOString();
+
+      localStorage.setItem('landguard_support_tickets', JSON.stringify(tickets));
+      return tickets[index];
+    }
+  },
+
+  updateSupportConfig: async (data: Partial<SupportConfig>): Promise<SupportConfig> => {
+    try {
+      return await request<SupportConfig>('/support/admin/config', {
+        method: 'PUT',
+        body: JSON.stringify(data)
+      });
+    } catch {
+      const current = await api.getSupportConfig();
+      const updated: SupportConfig = {
+        ...current,
+        ...data
+      };
+      localStorage.setItem('landguard_support_config', JSON.stringify(updated));
+      return updated;
+    }
   }
 };
+

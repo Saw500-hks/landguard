@@ -255,3 +255,35 @@ class AuditLog(Base):
     created_at = Column(DateTime, default=datetime.datetime.utcnow)
 
     user = relationship("User", back_populates="audit_logs")
+
+
+class SupportTicket(Base):
+    """User support requests submitted through the Helpline & Support Center."""
+    __tablename__ = "support_tickets"
+
+    id = Column(Integer, primary_key=True, index=True)
+    ticket_id = Column(String(20), unique=True, index=True, nullable=False)  # e.g. #LG-2026-0001
+    full_name = Column(String(255), nullable=False)
+    email = Column(String(255), nullable=False)
+    phone = Column(String(20), nullable=True)
+    category = Column(String(100), nullable=False, index=True)  # Land Records, Property Ownership, etc.
+    subject = Column(String(500), nullable=False)
+    description = Column(Text, nullable=False)
+    status = Column(String(50), default="Request Received", index=True)
+    # Statuses: Request Received, Under Review, Support Team Assigned,
+    #           Additional Information Required, Resolved, Closed
+    admin_response = Column(Text, nullable=True)
+    assigned_to = Column(String(255), nullable=True)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)
+
+
+class SupportConfig(Base):
+    """Singleton table for admin-configurable support contact information."""
+    __tablename__ = "support_config"
+
+    id = Column(Integer, primary_key=True, default=1)
+    support_phone = Column(String(20), default="+91 XXXXX XXXXX")
+    support_email = Column(String(255), default="support@landguard.ai")
+    support_hours = Column(String(255), default="Monday–Saturday | 9:00 AM–6:00 PM")
+    updated_at = Column(DateTime, default=datetime.datetime.utcnow, onupdate=datetime.datetime.utcnow)

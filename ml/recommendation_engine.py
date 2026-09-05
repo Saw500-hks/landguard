@@ -15,37 +15,41 @@ def generate_recommendations(project_dict: Dict[str, Any], risk_category: str = 
     stakeholder = str(project_dict.get("stakeholder_responsiveness", "Medium")).capitalize()
     rehab_pct = float(project_dict.get("rehabilitation_percentage", 100))
     current_stage = str(project_dict.get("current_stage", ""))
-    possession_pct = float(project_dict.get("possession_percentage", 0))
+    possession_pct = float(project_dict.get("possession_percentage", project_dict.get("land_acquisition_progress", 100)))
+    comp_delay = int(project_dict.get("compensation_delay_days", 0))
+    doc_pct = float(project_dict.get("document_completion_percentage", 100 if doc_complete else 50))
 
-    # 1. Compensation Recommendations
-    if comp_pct < 40:
+    # Rule 1: IF land acquisition < 60% → Prioritize acquisition review
+    if possession_pct < 60:
         recommendations.append({
-            "problem": f"Severely Lagging Compensation Disbursement ({comp_pct:.1f}%)",
-            "severity": "CRITICAL",
-            "recommended_action": "Convene Special Land Acquisition Officer (LAO) Lok Adalat for expedited direct bank transfer (DBT) verification and grievance disposal.",
-            "responsible_department": "Revenue & Land Reforms Department / District Collectorate",
+            "problem": f"Land Acquisition Progress Low ({possession_pct:.1f}% < 60%)",
+            "severity": "CRITICAL" if possession_pct < 40 else "HIGH",
+            "recommended_action": "Prioritize land acquisition review; initiate expedited Section 38 joint demarcation survey with District Revenue Authority.",
+            "responsible_department": "District Collectorate & CALA",
             "priority": "P1",
-            "expected_impact": "Reduces projected acquisition delay by 35 to 45 days and prevents landowner injunctions."
-        })
-    elif comp_pct < 75:
-        recommendations.append({
-            "problem": f"Compensation Disbursement Gap ({comp_pct:.1f}% disbursed)",
-            "severity": "HIGH",
-            "recommended_action": "Publish pending award list in local Panchayat offices and verify joint beneficiary bank accounts to release award tranches.",
-            "responsible_department": "District Land Acquisition Officer (CALA)",
-            "priority": "P2",
-            "expected_impact": "Accelerates financial settlement by 20 to 25 days."
+            "expected_impact": "Accelerates ground handover progress by 25 to 35 days."
         })
 
-    # 2. Legal Dispute Recommendations
-    if disputes >= 3:
+    # Rule 2: IF compensation delay > 30 days → Escalate compensation processing
+    if comp_delay > 30 or comp_pct < 75:
         recommendations.append({
-            "problem": f"High Litigation Volume ({disputes} Active Petitions / Court Cases)",
-            "severity": "CRITICAL",
-            "recommended_action": "Submit urgent hearing applications and refer valuation grievances to the State Land Acquisition, Rehabilitation & Resettlement Authority (Sec 64).",
-            "responsible_department": "State Legal Cell & Government Pleader",
+            "problem": f"Compensation Disbursement Delayed ({comp_delay} days > 30 days)",
+            "severity": "CRITICAL" if comp_delay > 60 or comp_pct < 40 else "HIGH",
+            "recommended_action": "Escalate compensation processing; convene Special LAO Lok Adalat for direct bank transfer (DBT) verification and award release.",
+            "responsible_department": "Revenue & Land Reforms Department / Special LAO",
             "priority": "P1",
-            "expected_impact": "Mitigates legal stay risks and saves up to 60 days of court litigation latency."
+            "expected_impact": "Unlocks pending award payments, avoiding landowner agitation."
+        })
+
+    # Rule 3: IF legal cases > 5 → Assign legal review priority
+    if disputes > 5 or disputes >= 3:
+        recommendations.append({
+            "problem": f"High Litigation Volume ({disputes} Active Legal Cases > 5 Threshold)",
+            "severity": "CRITICAL",
+            "recommended_action": "Assign legal review priority; file urgent hearing applications in High Court and refer valuation disputes to State LARR Authority (Sec 64).",
+            "responsible_department": "State Legal Cell & Standing Government Counsel",
+            "priority": "P1",
+            "expected_impact": "Mitigates interim stay orders and saves up to 60 days of court litigation latency."
         })
     elif disputes in (1, 2):
         recommendations.append({
@@ -57,7 +61,18 @@ def generate_recommendations(project_dict: Dict[str, Any], risk_category: str = 
             "expected_impact": "Facilitates early disposal of status-quo orders within 15-30 days."
         })
 
-    # 3. Approvals Backlog
+    # Rule 4: IF document completion < 80% → Identify and complete missing documents
+    if doc_pct < 80 or not doc_complete:
+        recommendations.append({
+            "problem": f"Incomplete Cadastre & Title Documentation ({doc_pct:.1f}% < 80%)",
+            "severity": "HIGH",
+            "recommended_action": "Identify and complete missing documents; deploy Patwari task-force using DILRMP digitized maps to verify RoR.",
+            "responsible_department": "District Settlement & Revenue Department",
+            "priority": "P2",
+            "expected_impact": "Eliminates title ambiguities and Gazette notification deficiencies in 14 days."
+        })
+
+    # 5. Approvals Backlog
     if approval_days > 45:
         recommendations.append({
             "problem": f"Statutory Clearances Overdue by {approval_days} Days",
@@ -77,16 +92,6 @@ def generate_recommendations(project_dict: Dict[str, Any], risk_category: str = 
             "expected_impact": "Expedites pending NoCs within 10-14 days."
         })
 
-    # 4. Documentation
-    if not doc_complete:
-        recommendations.append({
-            "problem": "Incomplete Land Cadastre & Title Records",
-            "severity": "HIGH",
-            "recommended_action": "Deploy specialized revenue patwari task-force using DILRMP (Digital India Land Records) digitized maps to cross-verify RoR.",
-            "responsible_department": "District Settlement & Revenue Department",
-            "priority": "P2",
-            "expected_impact": "Eliminates documentation deficiencies and title ambiguities in 14 days."
-        })
 
     # 5. Stakeholder Responsiveness
     if stakeholder == "Low":

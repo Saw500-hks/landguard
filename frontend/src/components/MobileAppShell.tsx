@@ -4,7 +4,7 @@ import {
   AlertTriangle, MoreHorizontal, MapPin, Lightbulb,
   BarChart3, Cpu, LogOut, CheckCircle2, User as UserIcon,
   ChevronRight, Sparkles, ChevronDown, Plus, Smartphone,
-  Maximize2, Minimize2
+  Maximize2, Minimize2, Headphones
 } from 'lucide-react';
 import { User, UserRole } from '../types';
 
@@ -394,6 +394,28 @@ export const MobileAppShell: React.FC<MobileAppShellProps> = ({
                   >
                     <Cpu className="w-4 h-4" />
                     <span>ML Operations</span>
+                  </button>
+
+                  {currentUser.role === 'Administrator' && (
+                    <button
+                      onClick={() => { onNavigate('admin'); setDrawerOpen(false); }}
+                      className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl transition cursor-pointer ${
+                        currentPage === 'admin' ? 'bg-forest-900 text-white' : 'hover:bg-slate-100'
+                      }`}
+                    >
+                      <Shield className="w-4 h-4" />
+                      <span>Admin Console</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={() => { onNavigate('support'); setDrawerOpen(false); }}
+                    className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl transition cursor-pointer ${
+                      currentPage === 'support' ? 'bg-forest-900 text-white' : 'hover:bg-slate-100'
+                    }`}
+                  >
+                    <Headphones className="w-4 h-4" />
+                    <span>Support Center</span>
                   </button>
                 </div>
               </div>

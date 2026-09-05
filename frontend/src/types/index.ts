@@ -230,3 +230,62 @@ export interface AuditLog {
   details?: string;
   created_at: string;
 }
+
+export type SupportTicketStatus = 
+  | 'Request Received'
+  | 'Under Review'
+  | 'Support Team Assigned'
+  | 'Additional Information Required'
+  | 'Resolved'
+  | 'Closed';
+
+export type SupportCategory = 
+  | 'Land Records'
+  | 'Property Ownership'
+  | 'Document Problems'
+  | 'Land Dispute'
+  | 'Application Delay'
+  | 'Technical Problem'
+  | 'Other';
+
+export interface SupportTicket {
+  id: number;
+  ticket_id: string;
+  full_name: string;
+  email: string;
+  phone?: string;
+  category: SupportCategory | string;
+  subject: string;
+  description: string;
+  status: SupportTicketStatus | string;
+  admin_response?: string;
+  assigned_to?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface SupportConfig {
+  support_phone: string;
+  support_email: string;
+  support_hours: string;
+}
+
+export interface SupportTicketCreate {
+  full_name: string;
+  email: string;
+  phone?: string;
+  category: string;
+  subject: string;
+  description: string;
+}
+
+export interface SupportTicketStatusResponse {
+  ticket_id: string;
+  status: string;
+  category: string;
+  subject: string;
+  created_at?: string;
+  updated_at?: string;
+  admin_response?: string;
+}
+

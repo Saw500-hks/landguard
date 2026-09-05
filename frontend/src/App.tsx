@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Onboarding } from './pages/Onboarding';
 import { Login } from './pages/Login';
 import { MobileAppShell } from './components/MobileAppShell';
+import { LandGuardChatbot } from './components/LandGuardChatbot';
 import { DashboardPage } from './pages/DashboardPage';
 import { ScanInspect } from './pages/ScanInspect';
 import { ProjectsPage } from './pages/ProjectsPage';
@@ -11,6 +12,8 @@ import { AlertsPage } from './pages/AlertsPage';
 import { RecommendationsPage } from './pages/RecommendationsPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { ModelPage } from './pages/ModelPage';
+import { AdminPage } from './pages/AdminPage';
+import { SupportCenterPage } from './pages/SupportCenterPage';
 import { User, UserRole } from './types';
 import { getActiveUser, setActiveUser } from './services/api';
 import { DEMO_ALERTS } from './data/demoData';
@@ -124,88 +127,105 @@ export function App() {
 
   // 3. Post-Login Mobile Application Shell (max-w 430px centered)
   return (
-    <MobileAppShell
-      currentUser={currentUser}
-      currentPage={currentPage}
-      onNavigate={handleNavigate}
-      onRoleChange={handleRoleChange}
-      onLogout={handleLogout}
-      unreadAlertCount={unreadAlertCount}
-      showPhoneFrame={showPhoneFrame}
-      onTogglePhoneFrame={togglePhoneFrame}
-    >
-      {/* 1. Dashboard */}
-      {currentPage === 'dashboard' && (
-        <DashboardPage
-          onSelectProject={handleSelectProject}
-          onNavigate={handleNavigate}
-          userRole={currentUser.role}
-        />
-      )}
+    <>
+      <MobileAppShell
+        currentUser={currentUser}
+        currentPage={currentPage}
+        onNavigate={handleNavigate}
+        onRoleChange={handleRoleChange}
+        onLogout={handleLogout}
+        unreadAlertCount={unreadAlertCount}
+        showPhoneFrame={showPhoneFrame}
+        onTogglePhoneFrame={togglePhoneFrame}
+      >
+        {/* 1. Dashboard */}
+        {currentPage === 'dashboard' && (
+          <DashboardPage
+            onSelectProject={handleSelectProject}
+            onNavigate={handleNavigate}
+            userRole={currentUser.role}
+          />
+        )}
 
-      {/* 2. Scan & Inspect */}
-      {currentPage === 'scan' && (
-        <ScanInspect
-          onSelectProject={handleSelectProject}
-          onNavigate={handleNavigate}
-          onBack={() => handleNavigate('dashboard')}
-        />
-      )}
+        {/* 2. Scan & Inspect */}
+        {currentPage === 'scan' && (
+          <ScanInspect
+            onSelectProject={handleSelectProject}
+            onNavigate={handleNavigate}
+            onBack={() => handleNavigate('dashboard')}
+          />
+        )}
 
-      {/* 3. Projects Listing */}
-      {currentPage === 'projects' && (
-        <ProjectsPage
-          onSelectProject={handleSelectProject}
-          onBack={() => handleNavigate('dashboard')}
-          userRole={currentUser.role}
-        />
-      )}
+        {/* 3. Projects Listing */}
+        {currentPage === 'projects' && (
+          <ProjectsPage
+            onSelectProject={handleSelectProject}
+            onBack={() => handleNavigate('dashboard')}
+            userRole={currentUser.role}
+          />
+        )}
 
-      {/* 4. Project Details Dossier */}
-      {currentPage === 'project_detail' && (
-        <ProjectDetailPage
-          projectId={selectedProjectId}
-          onBack={() => handleNavigate('projects')}
-          onNavigate={handleNavigate}
-          userRole={currentUser.role}
-        />
-      )}
+        {/* 4. Project Details Dossier */}
+        {currentPage === 'project_detail' && (
+          <ProjectDetailPage
+            projectId={selectedProjectId}
+            onBack={() => handleNavigate('projects')}
+            onNavigate={handleNavigate}
+            userRole={currentUser.role}
+          />
+        )}
 
-      {/* 5. GIS Map */}
-      {currentPage === 'map' && (
-        <MapPage
-          onSelectProject={handleSelectProject}
-        />
-      )}
+        {/* 5. GIS Map */}
+        {currentPage === 'map' && (
+          <MapPage
+            onSelectProject={handleSelectProject}
+          />
+        )}
 
-      {/* 6. Alerts */}
-      {currentPage === 'alerts' && (
-        <AlertsPage
-          onSelectProject={handleSelectProject}
-          userRole={currentUser.role}
-        />
-      )}
+        {/* 6. Alerts */}
+        {currentPage === 'alerts' && (
+          <AlertsPage
+            onSelectProject={handleSelectProject}
+            userRole={currentUser.role}
+          />
+        )}
 
-      {/* 7. Recommendations */}
-      {currentPage === 'recommendations' && (
-        <RecommendationsPage
-          onSelectProject={handleSelectProject}
-          userRole={currentUser.role}
-        />
-      )}
+        {/* 7. Recommendations */}
+        {currentPage === 'recommendations' && (
+          <RecommendationsPage
+            onSelectProject={handleSelectProject}
+            userRole={currentUser.role}
+          />
+        )}
 
-      {/* 8. Analytics */}
-      {currentPage === 'analytics' && (
-        <AnalyticsPage />
-      )}
+        {/* 8. Analytics */}
+        {currentPage === 'analytics' && (
+          <AnalyticsPage />
+        )}
 
-      {/* 9. Model Management */}
-      {currentPage === 'model' && (
-        <ModelPage
-          userRole={currentUser.role}
-        />
-      )}
-    </MobileAppShell>
+        {/* 9. Model Management */}
+        {currentPage === 'model' && (
+          <ModelPage
+            userRole={currentUser.role}
+          />
+        )}
+
+        {/* 10. Admin Console */}
+        {currentPage === 'admin' && (
+          <AdminPage />
+        )}
+
+        {/* 11. Helpline & Support Center */}
+        {currentPage === 'support' && (
+          <SupportCenterPage
+            userRole={currentUser.role}
+          />
+        )}
+      </MobileAppShell>
+
+      {/* 🤖 AI Chatbot — floats on all pages */}
+      <LandGuardChatbot showPhoneFrame={showPhoneFrame} />
+    </>
   );
 }
 
