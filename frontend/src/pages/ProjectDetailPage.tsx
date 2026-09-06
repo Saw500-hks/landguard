@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft, Share2, MapPin, AlertTriangle, CheckCircle2,
   Clock, Scale, FileText, Users, Building, Shield, ChevronRight,
   Sparkles, RefreshCw, X, ArrowRight, Check
 } from 'lucide-react';
 import { DEMO_PROJECTS, ProjectItem } from '../data/demoData';
+import { api } from '../services/api';
 
 interface ProjectDetailPageProps {
   projectId: string;
@@ -33,6 +34,54 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({
   const [copied, setCopied] = useState<boolean>(false);
   const [activeStage, setActiveStage] = useState<StageCircle | null>(null);
   const [showRecalcModal, setShowRecalcModal] = useState<boolean>(false);
+
+  // Load project details dynamically from database
+  useEffect(() => {
+    let isMounted = true;
+    const loadDetail = async () => {
+      try {
+        const res = await api.getProjectDetail(projectId);
+        if (isMounted && res) {
+          const mapped: ProjectItem = {
+            id: res.id,
+            name: res.name,
+            state: res.state,
+            district: res.district,
+            project_type: res.project_type,
+            land_area_hectares: res.land_area_hectares,
+            affected_families: res.affected_families,
+            compensation_percentage: res.compensation_percentage,
+            compensation_budget_cr: res.compensation_budget_cr,
+            compensation_disbursed_cr: res.compensation_disbursed_cr,
+            approval_delay_days: res.approval_delay_days,
+            legal_disputes_count: res.legal_disputes_count,
+            documentation_complete: res.documentation_complete,
+            notification_complete: res.notification_complete,
+            possession_percentage: res.possession_percentage,
+            rehabilitation_percentage: res.rehabilitation_percentage,
+            stakeholder_responsiveness: res.stakeholder_responsiveness,
+            current_stage: res.current_stage,
+            risk_score: res.latest_prediction?.risk_score ?? 5.0,
+            delay_probability: res.latest_prediction?.delay_probability ?? 0.5,
+            risk_category: res.latest_prediction?.risk_category ?? 'MEDIUM',
+            predicted_delay_days: res.latest_prediction?.predicted_delay_days ?? 30,
+            confidence_score: res.latest_prediction?.confidence_score ?? 0.85,
+            last_updated: "Active Database",
+            latitude: res.latitude,
+            longitude: res.longitude,
+            bottleneck: res.recommendations?.[0]?.problem || "Statutory RFCTLARR review active"
+          };
+          setProject(mapped);
+          setCompDisbursed(res.compensation_disbursed_cr);
+          setLegalCount(res.legal_disputes_count);
+        }
+      } catch {
+        // Fallback to local demo data
+      }
+    };
+    loadDetail();
+    return () => { isMounted = false; };
+  }, [projectId]);
 
   // Recalculation Form Fields
   const [compDisbursed, setCompDisbursed] = useState<number>(project.compensation_disbursed_cr);
