@@ -254,25 +254,23 @@ export const LandGuardChatbot: React.FC<LandGuardChatbotProps> = ({ showPhoneFra
       {!isOpen && (
         <button
           onClick={handleOpen}
-          className={`${positionClass} bottom-20 right-4 z-40 flex items-center space-x-2 
-            bg-forest-900 hover:bg-forest-800 text-white 
-            pl-3.5 pr-4 py-2.5 rounded-full shadow-lg
+          className={`${positionClass} bottom-20 right-4 z-40 flex items-center justify-center 
+            w-12 h-12 bg-forest-900 hover:bg-forest-800 text-white 
+            rounded-full shadow-lg
             transition-all duration-300 ease-out transform hover:scale-105 active:scale-95
             cursor-pointer group`}
           style={{
             animation: 'chatbot-fab-entrance 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
             boxShadow: '0 4px 20px rgba(15, 77, 53, 0.35), 0 0 0 0 rgba(15, 77, 53, 0.4)'
           }}
-          aria-label="Open LandGuard AI Chat"
+          aria-label="Open LandGuard AI Assistant"
+          title="Open LandGuard AI Assistant"
           id="landguard-chatbot-fab"
         >
           {/* Pulse ring */}
           <span className="absolute inset-0 rounded-full animate-ping bg-forest-600 opacity-20" />
 
-          <span className="relative flex items-center space-x-2">
-            <Bot className="w-5 h-5 text-forest-100 group-hover:rotate-12 transition-transform" />
-            <span className="text-sm font-bold tracking-tight">LandGuard AI</span>
-          </span>
+          <Bot className="w-6 h-6 text-forest-100 group-hover:rotate-12 transition-transform relative z-10" />
         </button>
       )}
 
