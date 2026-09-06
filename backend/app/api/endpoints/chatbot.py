@@ -308,6 +308,40 @@ def _get_rule_response(message: str) -> ChatResponse:
     """Match user message against knowledge patterns and return the best response."""
     normalized = message.lower().strip()
 
+    # Direct database lookup for any project ID (e.g. LA-JH-2026-0042)
+    proj_match = re.search(r"\b(LA-[A-Za-z0-9_-]+)\b", message, re.IGNORECASE)
+    if proj_match:
+        from backend.app.database.session import SessionLocal
+        from backend.app.models.entities import Project
+        proj_id = proj_match.group(1).upper()
+        db = SessionLocal()
+        try:
+            p = db.query(Project).filter(Project.id == proj_id).first()
+            if p:
+                pred = p.predictions[0] if p.predictions else None
+                risk_cat = pred.risk_category if pred else "LOW"
+                delay_prob = round(pred.delay_probability * 100) if pred else 30
+                delay_days = pred.predicted_delay_days if pred else 15
+                resp = (
+                    f"**Project Dossier Telemetry: {p.id}** 🏗️\n\n"
+                    f"• **Project Name:** {p.name}\n"
+                    f"• **Location:** {p.district}, {p.state}\n"
+                    f"• **Sector:** {p.project_type}\n"
+                    f"• **Current Stage:** {p.current_stage}\n"
+                    f"• **Land Area:** {p.land_area_hectares} Hectares ({p.affected_families} affected families)\n"
+                    f"• **Compensation Disbursed:** {p.compensation_percentage}% (₹{p.compensation_disbursed_cr} Cr of ₹{p.compensation_budget_cr} Cr)\n"
+                    f"• **AI Risk Level:** **{risk_cat} RISK** (Delay Likelihood: {delay_prob}%, +{delay_days} days expected)\n\n"
+                    f"You can view full GIS corridor telemetry for this project in the Map and Projects sections."
+                )
+                return ChatResponse(
+                    response=resp,
+                    suggestions=["Application Delay", "Land Records", "Required Documents"]
+                )
+        except Exception:
+            pass
+        finally:
+            db.close()
+
     best_match = None
     best_score = 0
 

@@ -13,7 +13,7 @@ def get_map_projects(
     project_type: Optional[str] = Query(None),
     risk_category: Optional[str] = Query(None),
     current_stage: Optional[str] = Query(None),
-    limit: int = Query(500, ge=1, le=1200),
+    limit: int = Query(2000, ge=1, le=5000),
     db: Session = Depends(get_db)
 ):
     """

@@ -68,6 +68,7 @@ export interface Alert {
   severity: "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
   message: string;
   trigger_reason: string;
+  primary_factor?: string;
   recommended_action?: string;
   is_acknowledged: boolean;
   acknowledged_by?: string;
@@ -115,6 +116,7 @@ export interface Project {
   updated_at?: string;
   stages?: ProjectStage[];
   latest_prediction?: Prediction;
+  predictions?: Prediction[];
   recommendations?: Recommendation[];
   alerts?: Alert[];
   documents?: DocumentRecord[];

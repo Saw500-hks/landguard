@@ -15,7 +15,7 @@ import { ModelPage } from './pages/ModelPage';
 import { AdminPage } from './pages/AdminPage';
 import { SupportCenterPage } from './pages/SupportCenterPage';
 import { User, UserRole } from './types';
-import { getActiveUser, setActiveUser } from './services/api';
+import { getActiveUser, setActiveUser, api } from './services/api';
 import { DEMO_ALERTS } from './data/demoData';
 
 export function App() {
@@ -44,6 +44,15 @@ export function App() {
       setCurrentUser(cached);
       setSessionState('app');
     }
+
+    // Fetch real unread alert count from backend
+    api.getAlerts(undefined, false)
+      .then(alerts => {
+        if (alerts && alerts.length >= 0) {
+          setUnreadAlertCount(alerts.length);
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleRoleChange = (role: UserRole) => {

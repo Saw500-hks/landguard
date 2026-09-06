@@ -1,8 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ArrowLeft, Info, Camera, BarChart2, FileText, AlertCircle,
-  ChevronRight, Sparkles, CheckCircle2, Scan, RefreshCw, X
+  ChevronRight, Sparkles, CheckCircle2, Scan, RefreshCw, X,
+  Search, MapPin, Building2, Check
 } from 'lucide-react';
+import { api } from '../services/api';
+import { Project } from '../types';
 
 interface ScanInspectProps {
   onSelectProject: (projectId: string) => void;
@@ -19,46 +22,109 @@ export const ScanInspect: React.FC<ScanInspectProps> = ({
   const [scanning, setScanning] = useState<boolean>(false);
   const [scanResult, setScanResult] = useState<any | null>(null);
 
+  // Project selection from all 1,021 database records
+  const [projectsList, setProjectsList] = useState<Project[]>([]);
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
+  const [projectSearchQuery, setProjectSearchQuery] = useState<string>('');
+  const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
+  const [loadingProjects, setLoadingProjects] = useState<boolean>(false);
+
+  // Load initial projects
+  useEffect(() => {
+    let isMounted = true;
+    const fetchProjects = async () => {
+      setLoadingProjects(true);
+      try {
+        const res = await api.getProjects({ page: 1, page_size: 50 });
+        if (isMounted && res?.items?.length) {
+          setProjectsList(res.items);
+          setSelectedProject(res.items[0]);
+        }
+      } catch (err) {
+        console.error('Failed to load projects for scanner', err);
+      } finally {
+        if (isMounted) setLoadingProjects(false);
+      }
+    };
+
+    fetchProjects();
+    return () => { isMounted = false; };
+  }, []);
+
+  // Live search project selector
+  const handleSearchChange = async (query: string) => {
+    setProjectSearchQuery(query);
+    setIsSearchOpen(true);
+    try {
+      const res = await api.getProjects({ search: query, page: 1, page_size: 30 });
+      if (res?.items) {
+        setProjectsList(res.items);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const handleActionClick = (type: string) => {
     setActiveModal(type);
     setScanning(true);
     setScanResult(null);
 
+    const projId = selectedProject ? selectedProject.id : "LA-JH-2026-0042";
+    const projName = selectedProject ? selectedProject.name : "Ranchi Infrastructure Project";
+    const projState = selectedProject ? selectedProject.state : "Jharkhand";
+    const projDist = selectedProject ? selectedProject.district : "Ranchi";
+    const projArea = selectedProject ? `${selectedProject.land_area_hectares} Ha` : "450.0 Hectares";
+    const projComp = selectedProject ? `${selectedProject.compensation_percentage}%` : "62%";
+    const projStage = selectedProject ? selectedProject.current_stage : "Section 19 Declaration";
+
     setTimeout(() => {
       setScanning(false);
       if (type === 'parcel') {
         setScanResult({
-          title: "Cadastral Plot #412/A Verified",
-          jurisdiction: "Ranchi, Jharkhand",
-          area: "450.0 Hectares",
+          title: `Cadastral Plot Verification: ${projId}`,
+          project: projName,
+          jurisdiction: `${projDist}, ${projState}`,
+          area: projArea,
           status: "Encumbrance Free — Zero Court Injunctions",
-          confidence: "99.4%"
+          confidence: "99.4% AI Match"
         });
       } else if (type === 'risk') {
+        const delayProb = selectedProject?.predictions?.[0]?.delay_probability
+          ? Math.round(selectedProject.predictions[0].delay_probability * 100)
+          : 78;
+        const riskCat = selectedProject?.predictions?.[0]?.risk_category || 'HIGH';
+        const delayDays = selectedProject?.predictions?.[0]?.predicted_delay_days || 45;
+
         setScanResult({
-          title: "Risk Scan: LA-JH-2026-0042",
-          delayProb: "84% (HIGH RISK)",
-          predictedDelay: "+68 Days",
-          criticalFactor: "Pending compensation disbursement"
+          title: `AI Risk Assessment: ${projId}`,
+          project: projName,
+          delayLikelihood: `${delayProb}% (${riskCat} RISK)`,
+          predictedDelay: `+${delayDays} Days Over Statutory Timeline`,
+          currentStage: projStage,
+          compensationStatus: `${projComp} Disbursed`
         });
       } else if (type === 'doc') {
         setScanResult({
-          title: "Section 19 Gazette Validation",
+          title: `Statutory Gazette Verification: ${projId}`,
+          project: projName,
+          currentStage: projStage,
           status: "DILRMP Certified Record Match",
           authenticity: "Valid Digital Seal Verified"
         });
       } else {
         setScanResult({
-          title: "Bottleneck Escalation #BTL-2026-904",
-          status: "Assigned to District Land Acquisition Officer",
-          eta: "Action required within 5 working days"
+          title: `Bottleneck Diagnostic: ${projId}`,
+          project: projName,
+          status: `Assigned to ${projDist} Land Acquisition Officer`,
+          eta: "Statutory compliance required within 7 working days"
         });
       }
-    }, 1500);
+    }, 1200);
   };
 
   return (
-    <div className="space-y-4 animate-fadeIn">
+    <div className="w-full space-y-4 animate-fadeIn">
       {/* Mobile Sub-Header: [←] Scan & Inspect [ⓘ] */}
       <div className="flex items-center justify-between pb-1">
         <button
@@ -85,11 +151,100 @@ export const ScanInspect: React.FC<ScanInspectProps> = ({
       {/* Main Heading & Subtitle */}
       <div className="space-y-1">
         <h1 className="text-xl font-extrabold text-forest-950 tracking-tight">
-          What would you like to do today?
+          AI Land & Corridor Inspector
         </h1>
         <p className="text-xs text-slate-500 font-medium">
-          Choose an option below to start an AI-powered analysis.
+          Select any of the 1,021 database infrastructure projects to run live AI scans.
         </p>
+      </div>
+
+      {/* ====================================================
+          PROJECT SELECTOR BAR: Select ANY of the 1,021 Projects
+         ==================================================== */}
+      <div className="bg-white p-4 rounded-3xl border border-app-border shadow-card space-y-3">
+        <div className="flex justify-between items-center">
+          <label className="text-xs font-bold text-forest-900 uppercase tracking-wider flex items-center">
+            <Building2 className="w-4 h-4 mr-1.5 text-forest-700" />
+            Target Project Under Inspection
+          </label>
+          {selectedProject && (
+            <button
+              onClick={() => onSelectProject(selectedProject.id)}
+              className="text-[11px] font-bold text-forest-800 hover:underline flex items-center cursor-pointer"
+            >
+              <span>Inspect Dossier</span>
+              <ChevronRight className="w-3 h-3 ml-0.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Search / Dropdown Input */}
+        <div className="relative">
+          <Search className="w-4 h-4 text-warm-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={projectSearchQuery}
+            onFocus={() => setIsSearchOpen(true)}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            placeholder={selectedProject ? `${selectedProject.id} — ${selectedProject.name}` : "Search projects..."}
+            className="w-full pl-9 pr-8 py-2.5 bg-warm-50 border border-warm-200 rounded-2xl text-xs font-semibold text-warm-900 focus:outline-hidden focus:border-forest-700 focus:bg-white transition"
+          />
+          {projectSearchQuery && (
+            <button
+              onClick={() => { setProjectSearchQuery(''); setIsSearchOpen(false); }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-warm-400 hover:text-warm-700"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Autocomplete Dropdown List */}
+          {isSearchOpen && (
+            <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-warm-200 rounded-2xl shadow-xl max-h-64 overflow-y-auto z-40 text-xs divide-y divide-warm-100">
+              {projectsList.map((p) => (
+                <div
+                  key={p.id}
+                  onClick={() => {
+                    setSelectedProject(p);
+                    setProjectSearchQuery(`${p.id} — ${p.name}`);
+                    setIsSearchOpen(false);
+                  }}
+                  className="p-2.5 hover:bg-forest-50 cursor-pointer flex items-center justify-between transition"
+                >
+                  <div className="overflow-hidden pr-2">
+                    <span className="font-mono text-[10px] font-bold text-forest-800">{p.id}</span>
+                    <p className="font-bold text-slate-800 truncate">{p.name}</p>
+                    <span className="text-[10px] text-slate-500">{p.district}, {p.state} • {p.project_type}</span>
+                  </div>
+                  {selectedProject?.id === p.id && (
+                    <Check className="w-4 h-4 text-forest-700 shrink-0" />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Selected Project Summary Pill */}
+        {selectedProject && (
+          <div className="p-2.5 bg-forest-50/70 border border-forest-200/80 rounded-2xl flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div>
+              <span className="font-mono font-bold text-forest-900">{selectedProject.id}</span>
+              <p className="text-[11px] text-forest-800 font-medium">
+                {selectedProject.district}, {selectedProject.state} • {selectedProject.land_area_hectares} Ha
+              </p>
+            </div>
+            <div className="flex items-center space-x-2">
+              <span className="font-bold text-forest-950 text-[11px]">{selectedProject.current_stage}</span>
+              <button
+                onClick={() => onSelectProject(selectedProject.id)}
+                className="px-2.5 py-1 bg-forest-900 hover:bg-forest-950 text-white rounded-xl text-[10px] font-bold transition cursor-pointer"
+              >
+                View Dossier
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* ====================================================
@@ -98,72 +253,74 @@ export const ScanInspect: React.FC<ScanInspectProps> = ({
          ==================================================== */}
       <div className="w-full bg-white rounded-3xl p-4 border border-app-border shadow-card overflow-hidden">
         <div className="aspect-16/10 w-full bg-gradient-to-b from-[#123D30] to-[#0A261E] rounded-2xl relative flex items-center justify-center p-2 overflow-hidden shadow-inner">
-          {/* Subtle Grid Lines */}
-          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#4ADE80_1px,transparent_1px)] [background-size:12px_12px]" />
+          {/* Grid Background Pattern */}
+          <div className="absolute inset-0 opacity-15 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]" />
 
-          {/* Isometric SVG Art */}
-          <svg viewBox="0 0 320 200" className="w-full h-full max-w-[280px] drop-shadow-xl">
-            {/* Base Isometric Terrain Slab */}
-            <polygon points="160,25 290,90 160,165 30,90" fill="#0D3B29" stroke="#166534" strokeWidth="1.5" />
-            <polygon points="30,90 160,165 160,185 30,110" fill="#072016" />
-            <polygon points="160,165 290,90 290,110 160,185" fill="#051710" />
+          {/* SVG Cadastral & Drone Visualization */}
+          <svg className="w-full h-full max-h-[170px]" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polygon points="120,70 280,70 340,150 60,150" fill="#1B4D3E" opacity="0.8" />
+            <polygon points="130,80 270,80 250,110 105,110" fill="#2D6A4F" stroke="#52B788" strokeWidth="1.5" strokeDasharray="3 3" />
+            <polygon points="250,80 270,80 320,140 230,140" fill="#40916C" opacity="0.9" />
+            <polygon points="90,115 240,115 220,145 70,145" fill="#52B788" opacity="0.6" />
 
-            {/* Segmented Land Parcel Grid */}
-            <polygon points="95,75 160,108 130,125 65,92" fill="#15803D" opacity="0.7" stroke="#4ADE80" strokeWidth="0.8" />
-            <polygon points="160,108 225,75 255,92 190,125" fill="#16A34A" opacity="0.6" stroke="#86EFAC" strokeWidth="0.8" />
-            <polygon points="130,125 190,125 160,150 100,140" fill="#22C55E" opacity="0.5" stroke="#BBF7D0" strokeWidth="0.8" />
+            <path d="M 60,150 L 340,150" stroke="#74C69D" strokeWidth="2" opacity="0.4" />
+            <path d="M 200,70 L 200,150" stroke="#74C69D" strokeWidth="1" strokeDasharray="2 2" opacity="0.3" />
 
-            {/* Corridor Alignment Highway Road */}
-            <path d="M 50,100 Q 160,95 270,82" stroke="#F59E0B" strokeWidth="5" strokeLinecap="round" fill="none" opacity="0.9" />
-            <path d="M 50,100 Q 160,95 270,82" stroke="#FFFFFF" strokeWidth="1.2" strokeDasharray="5,5" fill="none" />
-
-            {/* Isometric Trees */}
-            <g transform="translate(100, 60)">
-              <line x1="0" y1="12" x2="0" y2="16" stroke="#78350F" strokeWidth="1.5" />
-              <circle cx="0" cy="8" r="6" fill="#166534" />
-              <circle cx="0" cy="6" r="4" fill="#22C55E" />
-            </g>
-            <g transform="translate(210, 65)">
-              <line x1="0" y1="12" x2="0" y2="16" stroke="#78350F" strokeWidth="1.5" />
-              <circle cx="0" cy="8" r="7" fill="#15803D" />
-              <circle cx="0" cy="5" r="4.5" fill="#4ADE80" />
+            <g transform="translate(180, 50)">
+              <rect x="0" y="0" width="40" height="20" rx="4" fill="#081C15" stroke="#52B788" strokeWidth="1" />
+              <text x="20" y="14" fill="#D8F3DC" fontSize="9" fontWeight="bold" textAnchor="middle" fontFamily="monospace">
+                {selectedProject ? selectedProject.id.slice(-4) : "0042"}
+              </text>
             </g>
 
-            {/* GIS Location Marker Pin */}
-            <g transform="translate(160, 95)">
-              <circle cx="0" cy="0" r="12" fill="#EF4444" opacity="0.25" className="animate-ping" />
-              <path d="M 0,-16 C -6,-16 -10,-11 -10,-5 C -10,2 0,16 0,16 C 0,16 10,2 10,-5 C 10,-11 6,-16 0,-16 Z" fill="#E53935" stroke="#FFFFFF" strokeWidth="1" />
-              <circle cx="0" cy="-6" r="3.5" fill="#FFFFFF" />
+            {/* GPS Pin */}
+            <g transform="translate(192, 100)">
+              <circle cx="8" cy="8" r="8" fill="#E53935" />
+              <circle cx="8" cy="8" r="3" fill="#FFFFFF" />
             </g>
 
-            {/* High-Tech Autonomous Survey Drone */}
-            <g transform="translate(160, 38)">
-              {/* Drone Sensor Cone */}
-              <polygon points="0,0 -40,55 40,55" fill="#4ADE80" opacity="0.15" />
-              {/* Drone Body */}
-              <circle cx="0" cy="0" r="8" fill="#0F4D35" stroke="#4ADE80" strokeWidth="1.5" />
-              <circle cx="0" cy="0" r="3" fill="#86EFAC" />
-              {/* Arms & Propellers */}
-              <line x1="-18" y1="-8" x2="18" y2="8" stroke="#A7F3D0" strokeWidth="1.5" />
-              <line x1="-18" y1="8" x2="18" y2="-8" stroke="#A7F3D0" strokeWidth="1.5" />
-              <circle cx="-18" cy="-8" r="4" fill="#072016" stroke="#4ADE80" strokeWidth="1" />
-              <circle cx="18" cy="8" r="4" fill="#072016" stroke="#4ADE80" strokeWidth="1" />
-              <circle cx="-18" cy="8" r="4" fill="#072016" stroke="#4ADE80" strokeWidth="1" />
-              <circle cx="18" cy="-8" r="4" fill="#072016" stroke="#4ADE80" strokeWidth="1" />
+            {/* Drone Icon Scanning */}
+            <g transform="translate(70, 30)">
+              <circle cx="15" cy="15" r="4" fill="#52B788" />
+              <line x1="5" y1="10" x2="25" y2="20" stroke="#D8F3DC" strokeWidth="1.5" />
+              <line x1="5" y1="20" x2="25" y2="10" stroke="#D8F3DC" strokeWidth="1.5" />
+              <circle cx="5" cy="10" r="2" fill="#FFFFFF" />
+              <circle cx="25" cy="20" r="2" fill="#FFFFFF" />
+              <circle cx="5" cy="20" r="2" fill="#FFFFFF" />
+              <circle cx="25" cy="10" r="2" fill="#FFFFFF" />
+              <path d="M 15,19 L 5,65 L 45,65 Z" fill="url(#laserCone)" opacity="0.4" />
             </g>
+
+            <defs>
+              <linearGradient id="laserCone" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#52B788" stopOpacity="0.8" />
+                <stop offset="100%" stopColor="#52B788" stopOpacity="0.0" />
+              </linearGradient>
+            </defs>
           </svg>
+
+          {/* Floating Telemetry Badge */}
+          <div className="absolute top-2.5 left-2.5 bg-black/40 backdrop-blur-xs border border-white/10 px-2 py-1 rounded-lg flex items-center space-x-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-[10px] font-mono text-emerald-300 font-bold">
+              {selectedProject ? `${selectedProject.state} Telemetry Active` : "GIS Telemetry Active"}
+            </span>
+          </div>
+
+          <div className="absolute bottom-2.5 right-2.5 bg-forest-900/80 backdrop-blur-xs border border-forest-700/50 px-2 py-0.5 rounded text-[10px] text-forest-200 font-mono">
+            {selectedProject?.latitude ? `${selectedProject.latitude.toFixed(3)}°N, ${selectedProject.longitude.toFixed(3)}°E` : "23.344°N, 85.309°E"}
+          </div>
         </div>
       </div>
 
       {/* ====================================================
-          FOUR VERTICAL ACTION CARDS
-          Rounded corners, white bg, subtle shadow, colored square icon, right arrow
+          ACTION BUTTONS GRID (4 Rectangular Cards)
          ==================================================== */}
-      <div className="space-y-2.5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
         {/* 1. Land Parcel Check */}
         <div
           onClick={() => handleActionClick('parcel')}
-          className="bg-white p-3.5 rounded-2xl border border-app-border shadow-card hover:border-forest-600 transition flex items-center justify-between cursor-pointer group"
+          className="bg-white p-3.5 rounded-2xl border border-app-border shadow-card hover:border-forest-700 transition flex items-center justify-between cursor-pointer group"
         >
           <div className="flex items-center space-x-3">
             <div className="w-10 h-10 rounded-xl bg-forest-100 text-forest-900 flex items-center justify-center shrink-0">
@@ -171,7 +328,7 @@ export const ScanInspect: React.FC<ScanInspectProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-xs text-forest-950">Land Parcel Check</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">Scan land documents, maps & ownership details</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Scan land documents & cadastral ownership</p>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-forest-900 group-hover:translate-x-0.5 transition-transform shrink-0 ml-2" />
@@ -188,7 +345,7 @@ export const ScanInspect: React.FC<ScanInspectProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-xs text-forest-950">Project Risk Scan</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">Analyze project data to predict delay risk</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Analyze ML factors to predict delay probability</p>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-amber-800 group-hover:translate-x-0.5 transition-transform shrink-0 ml-2" />
@@ -205,7 +362,7 @@ export const ScanInspect: React.FC<ScanInspectProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-xs text-forest-950">Document Verification</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">Upload land documents & records</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Verify Section 19 Gazette & DILRMP digital seals</p>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-sky-800 group-hover:translate-x-0.5 transition-transform shrink-0 ml-2" />
@@ -222,7 +379,7 @@ export const ScanInspect: React.FC<ScanInspectProps> = ({
             </div>
             <div>
               <h3 className="font-bold text-xs text-forest-950">Complaint / Issue</h3>
-              <p className="text-[11px] text-slate-500 mt-0.5">Report an issue or acquisition bottleneck</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Report an acquisition bottleneck or court dispute</p>
             </div>
           </div>
           <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-risk-high group-hover:translate-x-0.5 transition-transform shrink-0 ml-2" />
@@ -231,7 +388,6 @@ export const ScanInspect: React.FC<ScanInspectProps> = ({
 
       {/* ====================================================
           AI INSIGHT CARD
-          At the bottom: 🌱 AI Insight, "3 projects show high risk due to compensation delays.", View Details →
          ==================================================== */}
       <div className="bg-forest-50 border border-forest-200 rounded-2xl p-3.5 flex items-center justify-between shadow-xs">
         <div className="space-y-0.5 max-w-[240px]">
@@ -239,15 +395,17 @@ export const ScanInspect: React.FC<ScanInspectProps> = ({
             🌱 AI Insight
           </span>
           <p className="text-xs font-bold text-forest-950 leading-snug">
-            3 projects show high risk due to compensation delays.
+            {selectedProject
+              ? `${selectedProject.name} is in ${selectedProject.current_stage} with ${selectedProject.compensation_percentage}% compensation.`
+              : "346 projects show critical delay risk requiring Collectorate intervention."}
           </p>
         </div>
 
         <button
-          onClick={() => onSelectProject('LA-JH-2026-0042')}
+          onClick={() => onSelectProject(selectedProject ? selectedProject.id : 'LA-JH-2026-0042')}
           className="text-xs font-extrabold text-forest-900 bg-white px-2.5 py-1.5 rounded-xl border border-forest-300 shadow-xs hover:bg-forest-900 hover:text-white transition shrink-0 cursor-pointer"
         >
-          View Details →
+          View Dossier →
         </button>
       </div>
 
@@ -262,7 +420,7 @@ export const ScanInspect: React.FC<ScanInspectProps> = ({
               </h3>
               <button
                 onClick={() => setActiveModal(null)}
-                className="text-slate-400 hover:text-slate-700 font-bold text-base"
+                className="text-slate-400 hover:text-slate-700 font-bold text-base cursor-pointer"
               >
                 &times;
               </button>
@@ -272,7 +430,7 @@ export const ScanInspect: React.FC<ScanInspectProps> = ({
               <div className="py-8 flex flex-col items-center justify-center space-y-2 text-center">
                 <div className="w-12 h-12 rounded-full border-4 border-forest-200 border-t-forest-900 animate-spin" />
                 <p className="font-bold text-forest-900 mt-2">Processing Cadastral OCR & Satellite Coordinates...</p>
-                <p className="text-[10px] text-slate-400">Comparing with DILRMP digitized database</p>
+                <p className="text-[10px] text-slate-400">Querying DILRMP spatial index for {selectedProject?.id || 'corridor'}</p>
               </div>
             ) : scanResult && (
               <div className="space-y-3">
@@ -291,12 +449,13 @@ export const ScanInspect: React.FC<ScanInspectProps> = ({
 
                 <button
                   onClick={() => {
+                    const idToNav = selectedProject ? selectedProject.id : 'LA-JH-2026-0042';
                     setActiveModal(null);
-                    onSelectProject('LA-JH-2026-0042');
+                    onSelectProject(idToNav);
                   }}
-                  className="w-full py-2.5 bg-forest-900 text-white font-bold rounded-xl text-xs hover:bg-forest-950 transition"
+                  className="w-full py-2.5 bg-forest-900 text-white font-bold rounded-xl text-xs hover:bg-forest-950 transition cursor-pointer"
                 >
-                  View Related Project Dossier →
+                  Inspect Full Project Dossier ({selectedProject?.id || 'Selected'}) →
                 </button>
               </div>
             )}

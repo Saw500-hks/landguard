@@ -15,7 +15,7 @@ def get_recommendations(
     severity: Optional[str] = Query(None),
     status: Optional[str] = Query(None),
     priority: Optional[str] = Query(None),
-    limit: int = Query(50, ge=1, le=200),
+    limit: int = Query(250, ge=1, le=1000),
     db: Session = Depends(get_db)
 ):
     query = db.query(Recommendation)

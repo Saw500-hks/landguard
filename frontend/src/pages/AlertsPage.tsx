@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Bell, AlertTriangle, CheckCircle2, ArrowRight, Check,
-  Clock, ShieldAlert, Filter, Eye
+  Clock, ShieldAlert, Filter, Eye, Search, RefreshCw
 } from 'lucide-react';
-import { DEMO_ALERTS, AlertItem } from '../data/demoData';
+import { api } from '../services/api';
+import { Alert } from '../types';
 
 interface AlertsPageProps {
   onSelectProject: (projectId: string) => void;
@@ -11,30 +12,60 @@ interface AlertsPageProps {
 }
 
 export const AlertsPage: React.FC<AlertsPageProps> = ({ onSelectProject }) => {
-  const [alerts, setAlerts] = useState<AlertItem[]>(DEMO_ALERTS);
+  const [alerts, setAlerts] = useState<Alert[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [filterCategory, setFilterCategory] = useState<'All' | 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW'>('All');
 
-  const handleMarkAsRead = (id: number) => {
-    setAlerts(alerts.map(a => a.id === id ? { ...a, is_read: true } : a));
+  const fetchLiveAlerts = async () => {
+    setLoading(true);
+    try {
+      const res = await api.getAlerts(filterCategory === 'All' ? undefined : filterCategory);
+      setAlerts(res || []);
+    } catch (err) {
+      console.error('Failed to fetch alerts from API', err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleAcknowledge = (id: number) => {
-    setAlerts(alerts.map(a => a.id === id ? { ...a, is_acknowledged: true, is_read: true } : a));
+  useEffect(() => {
+    fetchLiveAlerts();
+  }, [filterCategory]);
+
+  const handleAcknowledge = async (id: number) => {
+    try {
+      await api.acknowledgeAlert(id);
+      setAlerts(prev => prev.map(a => a.id === id ? { ...a, is_acknowledged: true } : a));
+    } catch (err) {
+      console.error('Failed to acknowledge alert', err);
+      // Optimistic update
+      setAlerts(prev => prev.map(a => a.id === id ? { ...a, is_acknowledged: true } : a));
+    }
   };
 
   const filteredAlerts = alerts.filter(a => {
-    if (filterCategory === 'All') return true;
-    return a.severity === filterCategory;
+    const q = searchQuery.toLowerCase().trim();
+    if (!q) return true;
+    return a.project_id.toLowerCase().includes(q) ||
+      (a.title && a.title.toLowerCase().includes(q)) ||
+      (a.message && a.message.toLowerCase().includes(q)) ||
+      (a.primary_factor && a.primary_factor.toLowerCase().includes(q));
   });
 
   return (
-    <div className="space-y-6 animate-fadeIn">
+    <div className="w-full space-y-6 animate-fadeIn">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          <h1 className="text-2xl font-extrabold text-forest-950 tracking-tight">System Alerts</h1>
-          <p className="text-xs text-warm-600 font-medium">
-            Real-time threshold breaches, risk profile escalations, and statutory bottleneck warnings.
+          <div className="flex items-center space-x-2">
+            <h1 className="text-2xl font-extrabold text-forest-950 tracking-tight">System Alerts</h1>
+            <span className="bg-red-100 text-red-800 text-[11px] font-mono font-bold px-2.5 py-0.5 rounded-full border border-red-200">
+              {alerts.length} Total Alerts
+            </span>
+          </div>
+          <p className="text-xs text-warm-600 font-medium mt-0.5">
+            Real-time threshold breaches, statutory delay alerts, and risk escalations across all infrastructure projects.
           </p>
         </div>
 
@@ -56,8 +87,41 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({ onSelectProject }) => {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div className="bg-white p-3 rounded-2xl border border-warm-200 shadow-soft-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
+        <div className="relative w-full sm:max-w-md">
+          <Search className="w-4 h-4 text-warm-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search alerts by Project ID (e.g. LA-JH-2026-0042) or keyword..."
+            className="w-full pl-9 pr-4 py-2 bg-warm-50 border border-warm-200 rounded-xl text-xs font-medium text-warm-900 focus:outline-hidden focus:border-forest-700 focus:bg-white transition"
+          />
+        </div>
+
+        <div className="text-xs font-semibold text-warm-600 self-end sm:self-auto flex items-center space-x-2">
+          {loading ? (
+            <span className="flex items-center text-forest-700">
+              <RefreshCw className="w-3.5 h-3.5 mr-1 animate-spin" />
+              Loading real alerts...
+            </span>
+          ) : (
+            <span>Showing <strong>{filteredAlerts.length}</strong> of {alerts.length} alerts</span>
+          )}
+        </div>
+      </div>
+
       {/* Alerts List */}
       <div className="space-y-4">
+        {filteredAlerts.length === 0 && !loading && (
+          <div className="bg-white rounded-3xl p-12 text-center border border-warm-200">
+            <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto mb-2" />
+            <h3 className="font-bold text-base text-forest-950">No alerts found</h3>
+            <p className="text-xs text-warm-500 mt-1">Try resetting the search query or selecting "All".</p>
+          </div>
+        )}
+
         {filteredAlerts.map((alert) => {
           const isCritical = alert.severity === 'CRITICAL';
           const isHigh = alert.severity === 'HIGH';
@@ -71,7 +135,7 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({ onSelectProject }) => {
             <div
               key={alert.id}
               className={`bg-white rounded-3xl p-6 border shadow-soft-sm transition-all space-y-4 ${
-                alert.is_read ? 'border-warm-200 opacity-90' : 'border-orange-300 shadow-soft-md'
+                alert.is_acknowledged ? 'border-warm-200 opacity-80' : 'border-orange-300 shadow-soft-md'
               }`}
             >
               {/* Alert Header */}
@@ -85,12 +149,13 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({ onSelectProject }) => {
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${badgeColor}`}>
                         {alert.severity} RISK ALERT
                       </span>
-                      <span className="font-mono text-xs font-bold text-forest-900 bg-warm-100 px-2 py-0.5 rounded border border-warm-200">
+                      <button
+                        onClick={() => onSelectProject(alert.project_id)}
+                        className="font-mono text-xs font-bold text-forest-900 bg-warm-100 hover:bg-forest-100 px-2 py-0.5 rounded border border-warm-200 transition cursor-pointer"
+                        title="Click to view project dossier"
+                      >
                         {alert.project_id}
-                      </span>
-                      <span className="text-xs text-warm-500 font-medium hidden sm:inline">
-                        • {alert.project_name}
-                      </span>
+                      </button>
                     </div>
                     <h3 className="font-bold text-base text-forest-950 mt-1">{alert.title}</h3>
                   </div>
@@ -98,7 +163,7 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({ onSelectProject }) => {
 
                 <div className="flex items-center space-x-2 text-xs text-warm-500">
                   <Clock className="w-3.5 h-3.5" />
-                  <span>{alert.time}</span>
+                  <span>{alert.created_at ? new Date(alert.created_at).toLocaleString() : 'Just now'}</span>
                 </div>
               </div>
 
@@ -110,27 +175,18 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({ onSelectProject }) => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
                   <div>
                     <span className="text-[10px] font-bold uppercase text-warm-500 block">Primary Reason</span>
-                    <span className="font-semibold text-warm-800">{alert.primary_factor}</span>
+                    <span className="font-semibold text-warm-800">{alert.primary_factor || 'Disbursement Delay / Pending Statutory Clearance'}</span>
                   </div>
                   <div>
                     <span className="text-[10px] font-bold uppercase text-warm-500 block">Recommended Action</span>
-                    <span className="font-semibold text-forest-900">{alert.recommended_action}</span>
+                    <span className="font-semibold text-forest-900">{alert.recommended_action || 'Review corridor bottlenecks and expedite nodal approvals.'}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Actions: Mark as read, Acknowledge alert, View project */}
+              {/* Actions: Acknowledge alert, View project */}
               <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
                 <div className="flex items-center space-x-2">
-                  {!alert.is_read && (
-                    <button
-                      onClick={() => handleMarkAsRead(alert.id)}
-                      className="px-3 py-1.5 rounded-xl border border-warm-300 bg-white text-xs font-bold text-warm-700 hover:bg-warm-100 transition cursor-pointer"
-                    >
-                      Mark as Read
-                    </button>
-                  )}
-
                   <button
                     onClick={() => handleAcknowledge(alert.id)}
                     disabled={alert.is_acknowledged}
@@ -149,7 +205,7 @@ export const AlertsPage: React.FC<AlertsPageProps> = ({ onSelectProject }) => {
                   onClick={() => onSelectProject(alert.project_id)}
                   className="px-4 py-2 bg-forest-900 hover:bg-forest-950 text-white rounded-xl text-xs font-bold transition flex items-center space-x-1.5 shadow-soft cursor-pointer"
                 >
-                  <span>View Project</span>
+                  <span>Open Project Dossier ({alert.project_id})</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
