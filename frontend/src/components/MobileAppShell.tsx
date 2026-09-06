@@ -50,33 +50,6 @@ export const MobileAppShell: React.FC<MobileAppShellProps> = ({
           : 'bg-app-bg flex flex-col w-full'
       }`}
     >
-      {/* Floating Phone Frame ON / OFF Toggle Button (Always visible on desktop) */}
-      {onTogglePhoneFrame && (
-        <button
-          onClick={onTogglePhoneFrame}
-          className="fixed top-3 right-3 z-50 hidden sm:flex items-center space-x-2 bg-slate-900/90 hover:bg-slate-800 text-white px-3.5 py-1.5 rounded-full text-xs font-bold border border-slate-700 shadow-2xl backdrop-blur-md cursor-pointer transition active:scale-95"
-          title="Toggle Phone Frame ON / OFF"
-        >
-          {showPhoneFrame ? (
-            <>
-              <Maximize2 className="w-3.5 h-3.5 text-forest-400" />
-              <span className="text-slate-200">Phone Frame:</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-forest-600 text-white">
-                ON
-              </span>
-            </>
-          ) : (
-            <>
-              <Smartphone className="w-3.5 h-3.5 text-slate-400" />
-              <span className="text-slate-200">Phone Frame:</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-slate-700 text-slate-300">
-                OFF (Full Screen)
-              </span>
-            </>
-          )}
-        </button>
-      )}
-
       {/* Main App Container: Either centered 430px phone or 100% full screen view */}
       <div
         className={`w-full bg-app-bg flex flex-col relative transition-all duration-300 ${
@@ -210,19 +183,6 @@ export const MobileAppShell: React.FC<MobileAppShellProps> = ({
                     </div>
                   )}
                 </div>
-              )}
-
-              {onTogglePhoneFrame && (
-                <button
-                  onClick={onTogglePhoneFrame}
-                  className="p-1.5 rounded-xl text-slate-600 hover:bg-slate-100 transition cursor-pointer flex items-center space-x-1 text-xs font-bold"
-                  title={showPhoneFrame ? "Switch to Full Screen Full Wide" : "Switch to Mobile Phone Frame"}
-                >
-                  <Smartphone className="w-4 h-4 text-forest-800" />
-                  <span className="hidden sm:inline text-[11px] text-slate-600 font-medium">
-                    {showPhoneFrame ? "Full Screen" : "Phone Frame"}
-                  </span>
-                </button>
               )}
 
               <button

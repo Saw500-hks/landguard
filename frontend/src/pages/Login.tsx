@@ -105,26 +105,6 @@ export const Login: React.FC<LoginProps> = ({
           : 'bg-gradient-to-br from-[#F4F7F2] via-[#F9FAF7] to-[#EDF3EC] flex flex-col justify-center items-center p-4'
       }`}
     >
-      {/* Floating Phone Frame ON / OFF Toggle Button */}
-      {onTogglePhoneFrame && (
-        <button
-          onClick={onTogglePhoneFrame}
-          type="button"
-          className="fixed top-3 right-3 z-50 hidden sm:flex items-center space-x-2 bg-slate-900/90 hover:bg-slate-800 text-white px-3.5 py-1.5 rounded-full text-xs font-bold border border-slate-700 shadow-2xl backdrop-blur-md cursor-pointer transition active:scale-95"
-          title="Toggle Phone Frame ON / OFF"
-        >
-          <Smartphone className="w-4 h-4 text-emerald-400" />
-          <span className="text-slate-200">Phone Frame:</span>
-          <span
-            className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase ${
-              showPhoneFrame ? 'bg-forest-700 text-white' : 'bg-slate-700 text-slate-300'
-            }`}
-          >
-            {showPhoneFrame ? 'ON' : 'OFF'}
-          </span>
-        </button>
-      )}
-
       {/* Main Login Container */}
       <div
         className={`w-full bg-gradient-to-br from-[#F5F8F3] via-[#FAFCF9] to-[#EEF4EC] flex flex-col justify-between relative transition-all duration-300 ${

@@ -43,33 +43,6 @@ export const Onboarding: React.FC<OnboardingProps> = ({
           : 'bg-app-bg flex flex-col'
       }`}
     >
-      {/* Floating Phone Frame ON / OFF Toggle Button */}
-      {onTogglePhoneFrame && (
-        <button
-          onClick={onTogglePhoneFrame}
-          className="fixed top-3 right-3 z-50 hidden sm:flex items-center space-x-2 bg-slate-900/90 hover:bg-slate-800 text-white px-3.5 py-1.5 rounded-full text-xs font-bold border border-slate-700 shadow-2xl backdrop-blur-md cursor-pointer transition active:scale-95"
-          title="Toggle Phone Frame ON / OFF"
-        >
-          {showPhoneFrame ? (
-            <>
-              <Smartphone className="w-4 h-4 text-forest-400" />
-              <span className="text-slate-200">Phone Frame:</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-forest-600 text-white">
-                ON
-              </span>
-            </>
-          ) : (
-            <>
-              <Smartphone className="w-4 h-4 text-slate-400" />
-              <span className="text-slate-200">Phone Frame:</span>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold uppercase bg-slate-700 text-slate-300">
-                OFF (Full Screen)
-              </span>
-            </>
-          )}
-        </button>
-      )}
-
       {/* Main Container */}
       <div
         className={`w-full bg-app-bg flex flex-col justify-between relative transition-all duration-300 ${
