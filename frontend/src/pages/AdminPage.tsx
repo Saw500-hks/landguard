@@ -70,7 +70,7 @@ export const AdminPage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+    <div className="w-full space-y-6">
       <div className="border-b border-slate-200 pb-4">
         <h2 className="text-xl font-bold text-slate-900 flex items-center">
           <ShieldCheck className="w-5 h-5 mr-2 text-sky-600" />

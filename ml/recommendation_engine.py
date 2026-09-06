@@ -41,17 +41,17 @@ def generate_recommendations(project_dict: Dict[str, Any], risk_category: str = 
             "expected_impact": "Unlocks pending award payments, avoiding landowner agitation."
         })
 
-    # Rule 3: IF legal cases > 5 → Assign legal review priority
-    if disputes > 5 or disputes >= 3:
+    # Rule 3: IF legal cases >= 5 → Assign legal review priority
+    if disputes >= 5:
         recommendations.append({
-            "problem": f"High Litigation Volume ({disputes} Active Legal Cases > 5 Threshold)",
+            "problem": f"High Litigation Volume ({disputes} Active Legal Cases >= 5 Threshold)",
             "severity": "CRITICAL",
             "recommended_action": "Assign legal review priority; file urgent hearing applications in High Court and refer valuation disputes to State LARR Authority (Sec 64).",
             "responsible_department": "State Legal Cell & Standing Government Counsel",
             "priority": "P1",
             "expected_impact": "Mitigates interim stay orders and saves up to 60 days of court litigation latency."
         })
-    elif disputes in (1, 2):
+    elif disputes >= 1:
         recommendations.append({
             "problem": f"{disputes} Pending Court Grievance(s)",
             "severity": "HIGH",

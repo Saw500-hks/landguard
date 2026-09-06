@@ -1,8 +1,10 @@
 import os
 from typing import List
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(case_sensitive=True)
+
     PROJECT_NAME: str = "LandGuard AI"
     TAGLINE: str = "Predict delays. Prevent bottlenecks. Accelerate infrastructure."
     VERSION: str = "1.0.0"
@@ -31,8 +33,5 @@ class Settings(BaseSettings):
     MODEL_DIR: str = os.path.join(PROJECT_ROOT, "ml", "saved_models")
     DATA_DIR: str = os.path.join(PROJECT_ROOT, "ml", "data")
     UPLOAD_DIR: str = os.path.join(PROJECT_ROOT, "uploads")
-
-    class Config:
-        case_sensitive = True
 
 settings = Settings()

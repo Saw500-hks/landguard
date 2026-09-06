@@ -1,5 +1,5 @@
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from datetime import datetime
 
 # --- Auth Schemas ---
@@ -36,8 +36,7 @@ class UserResponse(BaseModel):
     is_active: bool
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Stage Schemas ---
@@ -56,8 +55,7 @@ class StageResponse(StageBase):
     project_id: str
     updated_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Prediction & XAI Schemas ---
@@ -68,8 +66,7 @@ class RiskFactorResponse(BaseModel):
     impact_direction: str
     category: str
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class PredictionResponse(BaseModel):
     id: Optional[int] = None
@@ -86,8 +83,7 @@ class PredictionResponse(BaseModel):
     created_at: Optional[datetime] = None
     risk_factors: List[RiskFactorResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Recommendation Schemas ---
@@ -103,8 +99,7 @@ class RecommendationResponse(BaseModel):
     status: str
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class RecommendationStatusUpdate(BaseModel):
     status: str # Open, In Progress, Implemented, Dismissed
@@ -124,8 +119,7 @@ class AlertResponse(BaseModel):
     acknowledged_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Document Schemas ---
@@ -139,8 +133,7 @@ class DocumentResponse(BaseModel):
     verified: bool
     uploaded_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Project Schemas ---
@@ -202,8 +195,7 @@ class ProjectListResponse(BaseModel):
     latest_prediction: Optional[PredictionResponse] = None
     updated_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class ProjectDetailResponse(ProjectBase):
     dataset_type: str
@@ -215,8 +207,7 @@ class ProjectDetailResponse(ProjectBase):
     alerts: List[AlertResponse] = []
     documents: List[DocumentResponse] = []
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 # --- Dashboard KPI Schemas ---
@@ -278,8 +269,7 @@ class ModelVersionResponse(BaseModel):
     trained_at: datetime
     notes: Optional[str] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 class RetrainResponse(BaseModel):
     message: str
@@ -298,5 +288,4 @@ class AuditLogResponse(BaseModel):
     details: Optional[str] = None
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

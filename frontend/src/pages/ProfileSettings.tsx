@@ -28,7 +28,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6 animate-fadeIn">
+    <div className="w-full space-y-6 animate-fadeIn">
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-extrabold text-forest-950 tracking-tight">Profile & Administrative Settings</h1>

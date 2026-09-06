@@ -9,8 +9,8 @@ Endpoints for:
 import datetime
 import random
 from typing import Optional, List
-from fastapi import APIRouter, HTTPException, Depends, Query
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, ConfigDict
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, or_
 
@@ -23,12 +23,11 @@ router = APIRouter()
 # ─── Pydantic Models ────────────────────────────────────────────────────────
 
 class SupportConfigResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     support_phone: str
     support_email: str
     support_hours: str
-
-    class Config:
-        from_attributes = True
 
 
 class SupportConfigUpdate(BaseModel):
@@ -47,6 +46,8 @@ class TicketCreate(BaseModel):
 
 
 class TicketStatusResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     ticket_id: str
     status: str
     category: str
@@ -55,11 +56,10 @@ class TicketStatusResponse(BaseModel):
     updated_at: Optional[str] = None
     admin_response: Optional[str] = None
 
-    class Config:
-        from_attributes = True
-
 
 class TicketResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     ticket_id: str
     full_name: str
@@ -73,9 +73,6 @@ class TicketResponse(BaseModel):
     assigned_to: Optional[str] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
-
-    class Config:
-        from_attributes = True
 
 
 class TicketUpdate(BaseModel):

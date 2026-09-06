@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import {
   PhoneCall, Mail, Clock, Send, Search, CheckCircle2,
   HelpCircle, ShieldAlert, User, Phone, Tag,
   ChevronRight, RefreshCw, Edit3, Check, Copy, Settings,
@@ -683,13 +683,12 @@ export const SupportCenterPage: React.FC<SupportCenterPageProps> = ({ userRole }
 
                       return (
                         <div key={step} className="flex items-center gap-2 text-xs">
-                          <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] ${
-                            isCurrent
+                          <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] ${isCurrent
                               ? 'bg-forest-700 text-white ring-2 ring-forest-300'
                               : isCompleted
-                              ? 'bg-emerald-500 text-white'
-                              : 'bg-gray-200 text-gray-500'
-                          }`}>
+                                ? 'bg-emerald-500 text-white'
+                                : 'bg-gray-200 text-gray-500'
+                            }`}>
                             {isCompleted ? '✓' : idx + 1}
                           </div>
                           <span className={`${isCurrent ? 'font-bold text-forest-900' : isCompleted ? 'text-gray-700 font-medium' : 'text-gray-400'}`}>

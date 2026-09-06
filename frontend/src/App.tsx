@@ -27,7 +27,7 @@ export function App() {
   const [unreadAlertCount, setUnreadAlertCount] = useState<number>(DEMO_ALERTS.filter(a => !a.is_read).length);
   const [showPhoneFrame, setShowPhoneFrame] = useState<boolean>(() => {
     const saved = localStorage.getItem('landguard_phone_frame');
-    return saved !== null ? saved === 'true' : true;
+    return saved === 'true';
   });
 
   const togglePhoneFrame = () => {
