@@ -76,9 +76,6 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
                   <span className="font-extrabold text-base tracking-tight text-white">
                     LandGuard<span className="text-forest-400">AI</span>
                   </span>
-                  <span className="text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-forest-900 text-forest-300 border border-forest-700">
-                    SIH26
-                  </span>
                 </div>
                 <p className="text-[10px] text-forest-300 font-medium">
                   DoLR • Ministry of Rural Dev.

@@ -271,14 +271,14 @@ export const Login: React.FC<LoginProps> = ({
           </form>
 
           <p className="text-center text-[10px] text-slate-500 bg-transparent">
-            Demo credentials are pre-loaded for SIH presentation.
+            Demo credentials are pre-loaded for presentation.
           </p>
         </div>
 
         {/* Footer */}
         <div className="text-center pt-2 pb-1 border-t border-slate-200/60">
           <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-transparent">
-            Ministry of Rural Development • DoLR • SIH26017
+            Ministry of Rural Development • DoLR
           </p>
         </div>
       </div>

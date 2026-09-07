@@ -77,9 +77,6 @@ export const Header: React.FC<HeaderProps> = ({ currentUser, onUserChange, onNav
             <div>
               <div className="flex items-center space-x-2">
                 <span className="font-bold text-xl tracking-tight text-white">LandGuard<span className="text-sky-400">AI</span></span>
-                <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-sky-950 border border-sky-600/50 text-sky-300 tracking-wider">
-                  SIH26017
-                </span>
                 <span className="text-[10px] uppercase font-semibold px-2 py-0.5 rounded bg-amber-950 border border-amber-600/50 text-amber-300">
                   Demo Dataset
                 </span>
@@ -110,7 +107,7 @@ export const Header: React.FC<HeaderProps> = ({ currentUser, onUserChange, onNav
                 <div className="absolute right-0 mt-2 w-72 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl py-2 z-50">
                   <div className="px-3 py-1.5 border-b border-slate-800">
                     <p className="text-[11px] font-semibold uppercase text-sky-400 tracking-wider">
-                      Switch Role (SIH 2026 Evaluation)
+                      Switch Role (Evaluation Mode)
                     </p>
                     <p className="text-[10px] text-slate-400">Test different permissions instantly</p>
                   </div>

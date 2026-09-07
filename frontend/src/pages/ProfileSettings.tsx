@@ -125,7 +125,7 @@ export const ProfileSettings: React.FC<ProfileSettingsProps> = ({
 
             {/* Demonstration Notice */}
             <div className="p-4 bg-forest-50 border border-forest-200 rounded-2xl space-y-1">
-              <span className="font-bold text-forest-950 block">Smart India Hackathon 2026 Sandbox Notice</span>
+              <span className="font-bold text-forest-950 block">Sandbox Demonstration Notice</span>
               <p className="text-forest-800 text-[11px] leading-relaxed">
                 You are currently running LandGuard AI in demonstration sandbox mode. Changes to demonstration credentials and mock settings are stored locally in application session storage.
               </p>

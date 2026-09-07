@@ -96,9 +96,6 @@ export const MobileAppShell: React.FC<MobileAppShellProps> = ({
                   <span className="font-extrabold text-base tracking-tight text-forest-900">
                     LandGuard <span className="text-forest-600">AI</span>
                   </span>
-                  <span className="hidden sm:inline-block ml-2 text-[10px] bg-forest-100 text-forest-800 font-bold px-1.5 py-0.5 rounded">
-                    SIH 2026
-                  </span>
                 </div>
               </div>
             </div>

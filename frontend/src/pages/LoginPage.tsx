@@ -68,11 +68,6 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
           <p className="text-xs text-slate-600 font-bold uppercase tracking-widest bg-transparent">
             Ministry of Rural Development • Department of Land Resources (DoLR)
           </p>
-          <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-xs text-slate-700 shadow-2xs">
-            <span>Smart India Hackathon 2026</span>
-            <span>•</span>
-            <span className="font-mono text-forest-800 font-bold">SIH26017</span>
-          </div>
         </div>
 
         {/* Login Box */}
@@ -157,7 +152,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onLoginSuccess }) => {
 
         {/* Real-World Honesty Notice */}
         <p className="text-center text-[11px] text-slate-500 max-w-sm mx-auto bg-transparent">
-          Demonstration Dataset: Predictions are for presentation purposes under SIH26017.
+          Demonstration Dataset: Predictions are for presentation purposes.
         </p>
       </div>
     </div>

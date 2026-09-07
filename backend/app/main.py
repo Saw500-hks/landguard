@@ -20,8 +20,7 @@ os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 app = FastAPI(
     title=f"{settings.PROJECT_NAME} - DoLR / MoRD",
     description=(
-        "Predictive Analytics System for Early Detection of Land Acquisition Delays "
-        "(Smart India Hackathon 2026 - Problem ID: SIH26017)\n\n"
+        "Predictive Analytics System for Early Detection of Land Acquisition Delays\n\n"
         "Ministry of Rural Development | Department of Land Resources (DoLR)\n\n"
         "**Notice:** Demonstration Dataset - Predictions are for demonstration purposes "
         "and should not be used as official administrative decisions."
@@ -35,7 +34,7 @@ app = FastAPI(
 # CORS middleware for local frontend development and production
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allow all for hackathon demonstration
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -68,7 +67,6 @@ else:
             "tagline": settings.TAGLINE,
             "ministry": "Ministry of Rural Development",
             "department": "Department of Land Resources (DoLR)",
-            "sih_problem_id": "SIH26017",
             "status": "OPERATIONAL",
             "docs_url": "/api/docs",
             "version": settings.VERSION,
