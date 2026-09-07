@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Lock, Mail, ArrowRight, CheckCircle2, Sparkles, Smartphone } from 'lucide-react';
+import { Shield, Lock, Mail, ArrowRight, CheckCircle2, Sparkles, Globe } from 'lucide-react';
 import { User as UserType, UserRole } from '../types';
 import { api, setActiveUser, setAuthToken } from '../services/api';
 
@@ -13,54 +13,112 @@ interface LoginProps {
 interface RoleOption {
   role: UserRole;
   title: string;
+  titleHi: string;
   email: string;
   pwd: string;
   desc: string;
+  descHi: string;
 }
 
 const ROLE_OPTIONS: RoleOption[] = [
   {
     role: "District Officer",
     title: "District Officer",
+    titleHi: "जिला अधिकारी",
     email: "district.officer@landguard.gov.in",
     pwd: "District@123",
-    desc: "Ranchi Collectorate"
+    desc: "Ranchi Collectorate",
+    descHi: "रांची समाहरणालय"
   },
   {
     role: "State Officer",
     title: "State Officer",
+    titleHi: "राज्य नोडल अधिकारी",
     email: "state.officer@landguard.gov.in",
     pwd: "State@123",
-    desc: "Jharkhand Revenue"
+    desc: "Jharkhand Revenue",
+    descHi: "झारखंड राजस्व विभाग"
   },
   {
     role: "Project Manager",
     title: "Project Manager",
+    titleHi: "परियोजना प्रबंधक",
     email: "pm@landguard.gov.in",
     pwd: "Manager@123",
-    desc: "NHAI Expressway Lead"
+    desc: "NHAI Expressway Lead",
+    descHi: "एनएचएआई एक्सप्रेसवे"
   },
   {
     role: "Viewer",
     title: "Analyst / Viewer",
+    titleHi: "विश्लेषक / दर्शक",
     email: "viewer@landguard.gov.in",
     pwd: "Viewer@123",
-    desc: "NITI Aayog Division"
+    desc: "NITI Aayog Division",
+    descHi: "नीति आयोग प्रभाग"
   }
 ];
+
+const LOGIN_TRANSLATIONS = {
+  en: {
+    welcome: 'Welcome Back!',
+    subtitle: 'Sign in to monitor your projects and manage acquisition risks with LandGuard AI.',
+    selectRole: 'Select Your Role',
+    demoProfile: 'Demonstration Profile',
+    officialEmail: 'Official Email',
+    password: 'Password',
+    rememberMe: 'Remember Me',
+    forgotPassword: 'Forgot Password?',
+    forgotPasswordAlert: 'Password reset assistance dispatched to official email.',
+    signIn: 'Sign In',
+    signingIn: 'Signing In...',
+    or: 'OR',
+    enterDemoMode: 'Enter Demo Mode',
+    demoNotice: 'Demo credentials are pre-loaded for presentation.',
+    footer: 'Ministry of Rural Development • DoLR'
+  },
+  hi: {
+    welcome: 'वापसी पर स्वागत है!',
+    subtitle: 'LandGuard AI के साथ अपनी परियोजनाओं की निगरानी और भूमि अधिग्रहण जोखिम प्रबंधन के लिए साइन इन करें।',
+    selectRole: 'अपनी भूमिका चुनें',
+    demoProfile: 'डेमो प्रोफाइल',
+    officialEmail: 'आधिकारिक ईमेल',
+    password: 'पासवर्ड',
+    rememberMe: 'मुझे याद रखें',
+    forgotPassword: 'पासवर्ड भूल गए?',
+    forgotPasswordAlert: 'पासवर्ड रीसेट सहायता आपके आधिकारिक ईमेल पर भेज दी गई है।',
+    signIn: 'साइन इन करें',
+    signingIn: 'साइन इन हो रहा है...',
+    or: 'या',
+    enterDemoMode: 'डेमो मोड में प्रवेश करें',
+    demoNotice: 'प्रस्तुति के लिए डेमो क्रेडेंशियल्स पहले से लोड हैं।',
+    footer: 'ग्रामीण विकास मंत्रालय • भूमि संसाधन विभाग (DoLR)'
+  }
+};
 
 export const Login: React.FC<LoginProps> = ({
   onLoginSuccess,
   onEnterDemoMode,
-  showPhoneFrame = true,
-  onTogglePhoneFrame
+  showPhoneFrame = true
 }) => {
+  const [language, setLanguage] = useState<'en' | 'hi'>(() => {
+    const saved = localStorage.getItem('landguard_language');
+    return (saved === 'hi' || saved === 'en') ? saved : 'en';
+  });
+
   const [selectedRole, setSelectedRole] = useState<RoleOption>(ROLE_OPTIONS[0]);
   const [email, setEmail] = useState<string>(ROLE_OPTIONS[0].email);
   const [password, setPassword] = useState<string>(ROLE_OPTIONS[0].pwd);
   const [rememberMe, setRememberMe] = useState<boolean>(true);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  const t = LOGIN_TRANSLATIONS[language];
+
+  const handleLanguageChange = (lang: 'en' | 'hi') => {
+    setLanguage(lang);
+    localStorage.setItem('landguard_language', lang);
+  };
 
   const handleSelectRole = (r: RoleOption) => {
     setSelectedRole(r);
@@ -113,31 +171,55 @@ export const Login: React.FC<LoginProps> = ({
             : 'max-w-md mx-auto p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-2xl my-auto'
         }`}
       >
+        {/* Top bar with Language Selector */}
+        <div className="flex items-center justify-between z-10 shrink-0 pb-1">
+          <div className="flex items-center space-x-1.5">
+            <div className="w-6 h-6 rounded-lg bg-forest-900 flex items-center justify-center">
+              <Shield className="w-3.5 h-3.5 text-forest-100" />
+            </div>
+            <span className="font-extrabold text-xs tracking-tight text-forest-950">
+              LandGuard <span className="text-forest-600">AI</span>
+            </span>
+          </div>
+
+          <div className="flex items-center space-x-1.5 bg-white border border-app-border px-2.5 py-1 rounded-full text-[11px] font-bold text-slate-700 shadow-xs">
+            <Globe className="w-3 h-3 text-forest-900 shrink-0" />
+            <select
+              value={language}
+              onChange={(e) => handleLanguageChange(e.target.value as 'en' | 'hi')}
+              className="bg-transparent border-none focus:outline-hidden text-[11px] font-bold cursor-pointer text-forest-950"
+            >
+              <option value="en">English</option>
+              <option value="hi">हिंदी (Hindi)</option>
+            </select>
+          </div>
+        </div>
+
         {/* Brand Header */}
         <div className="text-center pt-2 pb-1">
-          <div className="inline-flex items-center justify-center w-13 h-13 rounded-2xl bg-forest-900 text-white shadow-lg shadow-forest-900/20 mb-3.5 ring-4 ring-forest-900/10">
-            <Shield className="w-7 h-7 text-emerald-300" />
+          <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-forest-900 text-white shadow-lg shadow-forest-900/20 mb-3 ring-4 ring-forest-900/10">
+            <Shield className="w-6 h-6 text-emerald-300" />
           </div>
           
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-forest-950 bg-transparent">
-            Welcome Back!
+            {t.welcome}
           </h1>
           
           <p className="text-xs sm:text-sm text-slate-600 max-w-[300px] mx-auto leading-relaxed mt-1.5 bg-transparent font-normal">
-            Sign in to monitor your projects and manage acquisition risks with LandGuard AI.
+            {t.subtitle}
           </p>
         </div>
 
         {/* Scrollable Form Body */}
-        <div className="my-auto py-3 space-y-5">
+        <div className="my-auto py-2 space-y-4">
           {/* Role Selection 2-Column Grid */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="text-[11px] font-bold uppercase tracking-wider text-slate-700 bg-transparent block">
-                Select Your Role
+                {t.selectRole}
               </label>
               <span className="text-[10px] text-slate-500 font-medium bg-transparent">
-                Demonstration Profile
+                {t.demoProfile}
               </span>
             </div>
 
@@ -161,14 +243,14 @@ export const Login: React.FC<LoginProps> = ({
                           isSelected ? 'text-forest-950' : 'text-slate-800'
                         }`}
                       >
-                        {r.title}
+                        {language === 'hi' ? r.titleHi : r.title}
                       </span>
                       {isSelected && (
                         <CheckCircle2 className="w-3.5 h-3.5 text-forest-700 shrink-0 mt-0.5" />
                       )}
                     </div>
                     <p className="text-[10px] text-slate-500 mt-1 truncate bg-transparent font-normal">
-                      {r.desc}
+                      {language === 'hi' ? r.descHi : r.desc}
                     </p>
                   </button>
                 );
@@ -177,7 +259,7 @@ export const Login: React.FC<LoginProps> = ({
           </div>
 
           {/* Form Card */}
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm space-y-4">
+          <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200/90 shadow-sm space-y-3.5">
             {error && (
               <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 font-medium">
                 {error}
@@ -187,7 +269,7 @@ export const Login: React.FC<LoginProps> = ({
             {/* Official Email */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-800 block bg-transparent">
-                Official Email
+                {t.officialEmail}
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
@@ -205,7 +287,7 @@ export const Login: React.FC<LoginProps> = ({
             {/* Password */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-800 block bg-transparent">
-                Password
+                {t.password}
               </label>
               <div className="relative">
                 <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
@@ -229,15 +311,15 @@ export const Login: React.FC<LoginProps> = ({
                   onChange={(e) => setRememberMe(e.target.checked)}
                   className="w-4 h-4 rounded text-forest-800 focus:ring-forest-700 border-slate-300 cursor-pointer accent-forest-800"
                 />
-                <span className="text-slate-700 font-medium bg-transparent">Remember Me</span>
+                <span className="text-slate-700 font-medium bg-transparent">{t.rememberMe}</span>
               </label>
 
               <button
                 type="button"
-                onClick={() => alert("Password reset assistance dispatched to official email.")}
+                onClick={() => alert(t.forgotPasswordAlert)}
                 className="font-bold text-forest-800 hover:text-forest-950 hover:underline bg-transparent cursor-pointer"
               >
-                Forgot Password?
+                {t.forgotPassword}
               </button>
             </div>
 
@@ -247,15 +329,15 @@ export const Login: React.FC<LoginProps> = ({
               disabled={loading}
               className="w-full py-3 bg-forest-900 hover:bg-forest-950 active:scale-[0.99] text-white rounded-xl font-bold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-70 mt-1"
             >
-              <span>{loading ? 'Signing In...' : 'Sign In'}</span>
+              <span>{loading ? t.signingIn : t.signIn}</span>
               <ArrowRight className="w-4 h-4 text-emerald-300" />
             </button>
 
             {/* Divider */}
-            <div className="relative flex items-center justify-center my-2">
+            <div className="relative flex items-center justify-center my-1.5">
               <div className="border-t border-slate-200 w-full" />
               <span className="bg-white px-2.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest relative">
-                OR
+                {t.or}
               </span>
             </div>
 
@@ -266,23 +348,22 @@ export const Login: React.FC<LoginProps> = ({
               className="w-full py-2.5 bg-white hover:bg-forest-50/60 active:scale-[0.99] text-forest-900 border-2 border-forest-700/40 hover:border-forest-700/70 rounded-xl font-bold text-xs sm:text-sm transition-all flex items-center justify-center space-x-2 cursor-pointer shadow-2xs"
             >
               <Sparkles className="w-4 h-4 text-forest-700" />
-              <span>Enter Demo Mode</span>
+              <span>{t.enterDemoMode}</span>
             </button>
           </form>
 
           <p className="text-center text-[10px] text-slate-500 bg-transparent">
-            Demo credentials are pre-loaded for presentation.
+            {t.demoNotice}
           </p>
         </div>
 
         {/* Footer */}
         <div className="text-center pt-2 pb-1 border-t border-slate-200/60">
           <p className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider bg-transparent">
-            Ministry of Rural Development • DoLR
+            {t.footer}
           </p>
         </div>
       </div>
     </div>
   );
 };
-
