@@ -4,7 +4,7 @@ import {
   SupportTicket, SupportConfig, SupportTicketCreate, SupportTicketStatusResponse
 } from '../types';
 
-const API_BASE = '/api';
+const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 export function getAuthToken(): string | null {
   return localStorage.getItem('landguard_token');
