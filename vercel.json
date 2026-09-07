@@ -1,6 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd frontend && npm install && npm run build",
+  "build": {
+    "env": {
+      "UV_LINK_MODE": "copy"
+    }
+  },
+  "buildCommand": "export UV_LINK_MODE=copy && cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "framework": "vite",
   "rewrites": [
