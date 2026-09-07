@@ -90,11 +90,10 @@ export const ScanInspect: React.FC<ScanInspectProps> = ({
           confidence: "99.4% AI Match"
         });
       } else if (type === 'risk') {
-        const delayProb = selectedProject?.predictions?.[0]?.delay_probability
-          ? Math.round(selectedProject.predictions[0].delay_probability * 100)
-          : 78;
-        const riskCat = selectedProject?.predictions?.[0]?.risk_category || 'HIGH';
-        const delayDays = selectedProject?.predictions?.[0]?.predicted_delay_days || 45;
+        const rawProb = selectedProject?.predictions?.[0]?.delay_probability ?? (selectedProject as any)?.delay_probability ?? 0.78;
+        const delayProb = Math.round(rawProb * 100);
+        const riskCat = selectedProject?.predictions?.[0]?.risk_category || (selectedProject as any)?.risk_category || 'HIGH';
+        const delayDays = selectedProject?.predictions?.[0]?.predicted_delay_days || (selectedProject as any)?.predicted_delay_days || 45;
 
         setScanResult({
           title: `AI Risk Assessment: ${projId}`,

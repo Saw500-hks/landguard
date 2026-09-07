@@ -114,6 +114,12 @@ export interface Project {
   dataset_type: string;
   created_at?: string;
   updated_at?: string;
+  risk_category?: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  risk_score?: number;
+  delay_probability?: number;
+  predicted_delay_days?: number;
+  confidence_score?: number;
+  bottleneck?: string;
   stages?: ProjectStage[];
   latest_prediction?: Prediction;
   predictions?: Prediction[];
@@ -186,6 +192,9 @@ export interface GISFeature {
   delay_probability: number;
   risk_category: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
   predicted_delay_days: number;
+  bottleneck?: string;
+  affected_families?: number;
+  confidence_score?: number;
 }
 
 export interface ModelMetrics {

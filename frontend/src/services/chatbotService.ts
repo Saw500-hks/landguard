@@ -8,6 +8,7 @@
  */
 
 // ─── Types ──────────────────────────────────────────────────────────────────
+import { DEMO_PROJECTS } from '../data/demoData';
 
 export interface ChatMessage {
   id: string;
@@ -393,6 +394,30 @@ function findBestMatch(userMessage: string): { topic: string; entry: KnowledgeEn
 }
 
 function getLocalResponse(userMessage: string, _conversationHistory: ChatMessage[]): ChatMessage {
+  // Check if user is asking about any of the 1,021 projects by ID
+  const idMatch = userMessage.match(/LA-[A-Z]{2}-\d{4}-\d{4}/i);
+  if (idMatch) {
+    const projId = idMatch[0].toUpperCase();
+    const proj = DEMO_PROJECTS.find(p => p.id.toUpperCase() === projId);
+    if (proj) {
+      return {
+        id: generateId(),
+        role: 'assistant',
+        content: `📋 **Project Dossier: ${proj.name} (${proj.id})**\n\n` +
+          `• **Location:** ${proj.district}, ${proj.state}\n` +
+          `• **Sector:** ${proj.project_type}\n` +
+          `• **Stage:** ${proj.current_stage}\n` +
+          `• **AI Risk Level:** **${proj.risk_category}** (Risk Score: ${proj.risk_score}/10, Delay Probability: ${Math.round(proj.delay_probability * 100)}%)\n` +
+          `• **Land Area:** ${proj.land_area_hectares} Ha (${proj.affected_families} Affected Families)\n` +
+          `• **Compensation:** ${proj.compensation_percentage}% disbursed of ₹${proj.compensation_budget_cr} Cr budget\n` +
+          `• **Key Bottleneck:** ${proj.bottleneck}\n\n` +
+          `Would you like to inspect its acquisition timeline, view GIS coordinates, or review recommendations?`,
+        timestamp: Date.now(),
+        suggestions: ['Inspect Project', 'View GIS Map', 'System Recommendations']
+      };
+    }
+  }
+
   const match = findBestMatch(userMessage);
 
   let content: string;

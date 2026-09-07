@@ -320,10 +320,10 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onSelectProject, o
           {highRiskProjects.map((proj) => {
             const prob = proj.predictions && proj.predictions[0]
               ? Math.round(proj.predictions[0].delay_probability * 100)
-              : 85;
+              : Math.round(((proj as any).delay_probability || 0.85) * 100);
             const badge = proj.predictions && proj.predictions[0]
               ? proj.predictions[0].risk_category
-              : 'CRITICAL';
+              : ((proj as any).risk_category || 'CRITICAL');
 
             return (
               <div
