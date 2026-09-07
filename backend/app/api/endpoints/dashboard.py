@@ -1,9 +1,9 @@
 from typing import Optional
+from collections import defaultdict
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
-from sqlalchemy import func
 from backend.app.database.session import get_db
-from backend.app.models.entities import Project, Prediction, RiskFactor, ProjectStage
+from backend.app.models.entities import Project, Prediction
 
 router = APIRouter()
 
@@ -14,15 +14,18 @@ def get_dashboard_summary(
     project_type: Optional[str] = Query(None),
     db: Session = Depends(get_db)
 ):
-    project_query = db.query(Project)
-    if state:
-        project_query = project_query.filter(Project.state == state)
-    if district:
-        project_query = project_query.filter(Project.district == district)
-    if project_type:
-        project_query = project_query.filter(Project.project_type == project_type)
+    # Single query joining Project and Prediction
+    query = db.query(Project, Prediction).outerjoin(Prediction, Project.id == Prediction.project_id)
+    if state and state not in ("All States", "All"):
+        query = query.filter(Project.state == state)
+    if district and district not in ("All Districts", "All"):
+        query = query.filter(Project.district == district)
+    if project_type and project_type not in ("All Types", "All"):
+        query = query.filter(Project.project_type == project_type)
 
-    total_projects = project_query.count()
+    rows = query.all()
+    total_projects = len(rows)
+
     if total_projects == 0:
         return {
             "kpis": {
@@ -46,101 +49,123 @@ def get_dashboard_summary(
             "monthly_trend": []
         }
 
-    # Aggregate project totals
-    sum_area = db.query(func.sum(Project.land_area_hectares))
-    sum_families = db.query(func.sum(Project.affected_families))
-    sum_budget = db.query(func.sum(Project.compensation_budget_cr))
-    sum_disbursed = db.query(func.sum(Project.compensation_disbursed_cr))
+    total_area = 0.0
+    total_families = 0
+    total_budget = 0.0
+    total_disbursed = 0.0
 
-    if state:
-        sum_area = sum_area.filter(Project.state == state)
-        sum_families = sum_families.filter(Project.state == state)
-        sum_budget = sum_budget.filter(Project.state == state)
-        sum_disbursed = sum_disbursed.filter(Project.state == state)
-    if district:
-        sum_area = sum_area.filter(Project.district == district)
-        sum_families = sum_families.filter(Project.district == district)
-        sum_budget = sum_budget.filter(Project.district == district)
-        sum_disbursed = sum_disbursed.filter(Project.district == district)
-    if project_type:
-        sum_area = sum_area.filter(Project.project_type == project_type)
-        sum_families = sum_families.filter(Project.project_type == project_type)
-        sum_budget = sum_budget.filter(Project.project_type == project_type)
-        sum_disbursed = sum_disbursed.filter(Project.project_type == project_type)
+    crit_count = 0
+    high_count = 0
+    med_count = 0
+    low_count = 0
+    prob_sum = 0.0
+    pred_count = 0
 
-    total_area = sum_area.scalar() or 0.0
-    total_families = sum_families.scalar() or 0
-    total_budget = sum_budget.scalar() or 0.0
-    total_disbursed = sum_disbursed.scalar() or 0.0
+    state_stats = defaultdict(lambda: {"total": 0, "crit": 0, "high": 0, "prob_sum": 0.0, "preds": 0})
+    dist_stats = defaultdict(lambda: {"total": 0, "delay_sum": 0.0, "score_sum": 0.0, "state": "", "preds": 0})
+    stage_stats = defaultdict(lambda: {"total": 0, "delayed": 0})
 
-    # Predictions aggregation
-    pred_query = db.query(Prediction).join(Project, Project.id == Prediction.project_id)
-    if state:
-        pred_query = pred_query.filter(Project.state == state)
-    if district:
-        pred_query = pred_query.filter(Project.district == district)
-    if project_type:
-        pred_query = pred_query.filter(Project.project_type == project_type)
+    stage_names = [
+        "Preliminary Investigation", "Notification (Sec 11)", "Land Survey & Demarcation",
+        "Objection / Legal Hearing", "Compensation Assessment", "Compensation Disbursement",
+        "Rehabilitation & Resettlement", "Possession (Sec 38)", "Final Acquisition Complete"
+    ]
+    for s in stage_names:
+        stage_stats[s] = {"total": 0, "delayed": 0}
 
-    all_preds = pred_query.all()
-    crit_count = sum(1 for p in all_preds if p.risk_category == "CRITICAL")
-    high_count = sum(1 for p in all_preds if p.risk_category == "HIGH")
-    med_count = sum(1 for p in all_preds if p.risk_category == "MEDIUM")
-    low_count = sum(1 for p in all_preds if p.risk_category == "LOW")
+    for proj, pred in rows:
+        total_area += (proj.land_area_hectares or 0.0)
+        total_families += (proj.affected_families or 0)
+        total_budget += (proj.compensation_budget_cr or 0.0)
+        total_disbursed += (proj.compensation_disbursed_cr or 0.0)
 
-    avg_prob = sum(p.delay_probability for p in all_preds) / max(len(all_preds), 1)
+        # Stage matching
+        matched_stage = None
+        proj_stage_str = (proj.current_stage or "").lower()
+        for s in stage_names:
+            if s[:10].lower() in proj_stage_str:
+                matched_stage = s
+                break
+        if not matched_stage:
+            matched_stage = stage_names[0]
+        stage_stats[matched_stage]["total"] += 1
 
-    # State distribution
-    state_groups = (
-        db.query(
-            Project.state,
-            func.count(Project.id).label("total"),
-            func.avg(Prediction.delay_probability).label("avg_prob")
-        )
-        .join(Prediction, Project.id == Prediction.project_id)
-        .group_by(Project.state)
-        .all()
-    )
+        if pred:
+            pred_count += 1
+            prob = pred.delay_probability or 0.0
+            prob_sum += prob
 
+            rc = pred.risk_category or "MEDIUM"
+            if rc == "CRITICAL":
+                crit_count += 1
+                stage_stats[matched_stage]["delayed"] += 1
+            elif rc == "HIGH":
+                high_count += 1
+                stage_stats[matched_stage]["delayed"] += 1
+            elif rc == "LOW":
+                low_count += 1
+            else:
+                med_count += 1
+
+            s_name = proj.state or "Other"
+            state_stats[s_name]["total"] += 1
+            state_stats[s_name]["prob_sum"] += prob
+            state_stats[s_name]["preds"] += 1
+            if rc == "CRITICAL":
+                state_stats[s_name]["crit"] += 1
+            elif rc == "HIGH":
+                state_stats[s_name]["high"] += 1
+
+            d_name = proj.district or "Other"
+            dist_stats[d_name]["total"] += 1
+            dist_stats[d_name]["delay_sum"] += (pred.predicted_delay_days or 0)
+            dist_stats[d_name]["score_sum"] += (pred.risk_score or 0.0)
+            dist_stats[d_name]["state"] = proj.state or ""
+            dist_stats[d_name]["preds"] += 1
+        else:
+            med_count += 1
+
+    avg_prob = prob_sum / max(pred_count, 1)
+
+    # State distribution list
     state_distribution = []
-    for s_name, s_tot, s_avg in state_groups:
-        s_crit = db.query(Prediction).join(Project).filter(Project.state == s_name, Prediction.risk_category == "CRITICAL").count()
-        s_high = db.query(Prediction).join(Project).filter(Project.state == s_name, Prediction.risk_category == "HIGH").count()
+    for s_name, s_data in state_stats.items():
+        avg_sprob = s_data["prob_sum"] / max(s_data["preds"], 1)
         state_distribution.append({
             "state": s_name,
-            "total_projects": s_tot,
-            "avg_delay_prob": round(float(s_avg or 0.0), 2),
-            "high_risk_count": s_high,
-            "critical_risk_count": s_crit
+            "total_projects": s_data["total"],
+            "avg_delay_prob": round(float(avg_sprob), 2),
+            "high_risk_count": s_data["high"],
+            "critical_risk_count": s_data["crit"]
         })
     state_distribution.sort(key=lambda x: x["critical_risk_count"] + x["high_risk_count"], reverse=True)
 
-    # District trends (top 8 bottleneck districts)
-    dist_groups = (
-        db.query(
-            Project.district,
-            Project.state,
-            func.avg(Prediction.predicted_delay_days).label("avg_delay"),
-            func.count(Project.id).label("tot"),
-            func.avg(Prediction.risk_score).label("avg_score")
-        )
-        .join(Prediction, Project.id == Prediction.project_id)
-        .group_by(Project.district, Project.state)
-        .order_by(func.avg(Prediction.predicted_delay_days).desc())
-        .limit(10)
-        .all()
-    )
+    # District trends (top 10 by average delay)
+    dist_trends_list = []
+    for d_name, d_data in dist_stats.items():
+        if d_data["preds"] > 0:
+            avg_delay = d_data["delay_sum"] / d_data["preds"]
+            avg_score = d_data["score_sum"] / d_data["preds"]
+            dist_trends_list.append({
+                "district": d_name,
+                "state": d_data["state"],
+                "avg_delay_days": int(round(avg_delay)),
+                "project_count": d_data["total"],
+                "risk_score": round(float(avg_score), 1)
+            })
+    dist_trends_list.sort(key=lambda x: x["avg_delay_days"], reverse=True)
+    district_trends = dist_trends_list[:10]
 
-    district_trends = [
-        {
-            "district": d[0],
-            "state": d[1],
-            "avg_delay_days": int(d[2] or 0),
-            "project_count": d[3],
-            "risk_score": round(float(d[4] or 0.0), 1)
+    # Stage bottlenecks breakdown
+    stage_bottlenecks = {}
+    for stg, svals in stage_stats.items():
+        stot = svals["total"]
+        sdel = svals["delayed"]
+        stage_bottlenecks[stg] = {
+            "total": stot,
+            "delayed": sdel,
+            "delayed_pct": round((sdel / max(stot, 1)) * 100, 1)
         }
-        for d in dist_groups
-    ]
 
     # Top delay factors
     top_delay_factors = [
@@ -151,28 +176,7 @@ def get_dashboard_summary(
         {"factor": "Gram Sabha & Community Resistance", "affected_projects_pct": 21.0, "avg_impact_pct": 12.0}
     ]
 
-    # Stage bottlenecks breakdown
-    stage_names = [
-        "Preliminary Investigation", "Notification (Sec 11)", "Land Survey & Demarcation",
-        "Objection / Legal Hearing", "Compensation Assessment", "Compensation Disbursement",
-        "Rehabilitation & Resettlement", "Possession (Sec 38)", "Final Acquisition Complete"
-    ]
-    stage_bottlenecks = {}
-    for stg in stage_names:
-        stg_count = db.query(Project).filter(Project.current_stage.ilike(f"%{stg[:10]}%")).count()
-        stg_delayed = (
-            db.query(Project)
-            .join(Prediction)
-            .filter(Project.current_stage.ilike(f"%{stg[:10]}%"), Prediction.risk_category.in_(["HIGH", "CRITICAL"]))
-            .count()
-        )
-        stage_bottlenecks[stg] = {
-            "total": stg_count,
-            "delayed": stg_delayed,
-            "delayed_pct": round((stg_delayed / max(stg_count, 1)) * 100, 1)
-        }
-
-    # Monthly Trend (Simulated 6-month retrospective of acquisition delay flags)
+    # Monthly trend
     monthly_trend = [
         {"month": "Apr 2025", "avg_delay_prob": 0.48, "delayed_projects": int(total_projects * 0.32)},
         {"month": "Jun 2025", "avg_delay_prob": 0.52, "delayed_projects": int(total_projects * 0.35)},
