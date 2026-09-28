@@ -59,9 +59,9 @@ export const DashboardPage: React.FC<DashboardPageProps> = ({ onSelectProject, o
 
   const total = dashboardData?.kpis?.total_projects || 1021;
   const critical = dashboardData?.kpis?.critical_risk_projects || 346;
-  const high = dashboardData?.kpis?.high_risk_projects || 202;
+  const high = dashboardData?.kpis?.high_risk_projects || 201;
   const medium = dashboardData?.kpis?.medium_risk_projects || 134;
-  const low = dashboardData?.kpis?.low_risk_projects || 341;
+  const low = dashboardData?.kpis?.low_risk_projects || 340;
   const avgDelayProb = Math.round((dashboardData?.kpis?.average_delay_probability || 0.553) * 100);
 
   const riskDonutData = [

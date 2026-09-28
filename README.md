@@ -173,6 +173,24 @@ Every project's lifecycle is modeled through 9 chronological statutory milestone
 
 ---
 
+## 📊 Complete Demonstration Dataset (1,021 Projects Tracked)
+
+LandGuard AI is seeded and benchmarked against **1,021 comprehensive infrastructure land acquisition projects** across 8 Indian States and 7 statutory infrastructure sectors, reflecting end-to-end RFCTLARR Act acquisition pipelines:
+
+| Risk Category | Total Projects | Share (%) | Score Range | Avg Predicted Delay | Priority Action Required |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| 🔴 **CRITICAL** | **346** | 33.9% | 7.0 – 10.0 | ~95 days | Immediate Inter-Departmental Escalation & Legal Hearing |
+| 🟢 **LOW** | **340** | 33.3% | 0.0 – 3.4 | ~12 days | On-Track / Normal Administrative Processing |
+| 🟠 **HIGH** | **201** | 19.7% | 6.0 – 6.9 | ~68 days | Expedite Compensation Disbursement & Survey Demarcation |
+| 🟡 **MEDIUM** | **134** | 13.1% | 3.5 – 5.9 | ~47 days | Proactive Monitoring & Livelihood R&R Plan Review |
+| **Total Tracked** | **1,021** | **100.0%** | **0.0 – 10.0** | **~49 days** | **Synchronized Across DB, Offline JSON & ML Engine** |
+
+- **State Coverage (8 States):** Andhra Pradesh (102), Gujarat (131), Jharkhand (118), Madhya Pradesh (124), Maharashtra (138), Odisha (136), Tamil Nadu (134), Uttar Pradesh (138).
+- **Sector Coverage (7 Sectors):** Highways & Expressways, Irrigation & Water Reservoirs, Railways & Dedicated Freight, Mining & Coal Exploration, Renewable Energy & Solar Parks, Urban Metros & Smart Cities, Industrial Corridors & SEZ.
+- **Data Parity:** Identical 1,021-project data stores synchronized across SQLite (`landguard.db`), Frontend Offline Fallback (`frontend/src/data/allProjects.json`), and ML Training Corridors (`ml/data/demo_projects.csv`).
+
+---
+
 ## 🎯 Flagship Demonstration Project: `LA-JH-2026-0042`
 
 To ensure a seamless 5-minute hackathon evaluation, the dataset includes a specially calibrated showcase project:
@@ -232,8 +250,8 @@ LandGuard AI operates on SQLAlchemy 2.0 with full PostgreSQL 16+ compatibility a
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/LandGuard.git
-   cd LandGuard
+   git clone https://github.com/Saw500-hks/landguard.git
+   cd landguard
    ```
 
 2. **Set up Python Virtual Environment:**
