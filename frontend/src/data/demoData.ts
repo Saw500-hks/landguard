@@ -30,9 +30,35 @@ export interface ProjectItem {
   latitude: number;
   longitude: number;
   bottleneck: string;
+  latest_prediction?: {
+    project_id: string;
+    delay_probability: number;
+    risk_score: number;
+    risk_category: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+    predicted_delay_days: number;
+    confidence_score: number;
+    risk_30d?: number;
+    risk_60d?: number;
+    risk_90d?: number;
+    model_version?: string;
+  };
 }
 
-export const DEMO_PROJECTS: ProjectItem[] = allProjectsJson as ProjectItem[];
+export const DEMO_PROJECTS: ProjectItem[] = (allProjectsJson as any[]).map(p => ({
+  ...p,
+  latest_prediction: p.latest_prediction || {
+    project_id: p.id,
+    delay_probability: p.delay_probability ?? 0.5,
+    risk_score: p.risk_score ?? 5.0,
+    risk_category: p.risk_category ?? 'LOW',
+    predicted_delay_days: p.predicted_delay_days ?? 30,
+    confidence_score: p.confidence_score ?? 0.85,
+    risk_30d: (p.delay_probability || 0.5) * 0.4,
+    risk_60d: (p.delay_probability || 0.5) * 0.7,
+    risk_90d: p.delay_probability || 0.5,
+    model_version: "v1.0.0-rf"
+  }
+}));
 
 export interface AlertItem {
   id: number;

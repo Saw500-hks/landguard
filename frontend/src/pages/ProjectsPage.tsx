@@ -378,20 +378,21 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ onSelectProject, onB
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {projects.map((project) => {
-            const riskCat = project.latest_prediction?.risk_category || 'MEDIUM';
-            const riskScore = project.latest_prediction?.risk_score ?? 5.0;
-            const delayProb = project.latest_prediction?.delay_probability ?? 0.5;
+            const riskCat = project.latest_prediction?.risk_category || (project as any).risk_category || 'LOW';
+            const riskScore = project.latest_prediction?.risk_score ?? (project as any).risk_score ?? 0;
+            const delayProb = project.latest_prediction?.delay_probability ?? (project as any).delay_probability ?? 0;
 
             const isHigh = riskCat === 'HIGH' || riskCat === 'CRITICAL';
             const isCritical = riskCat === 'CRITICAL';
+            const isMedium = riskCat === 'MEDIUM';
 
             const badgeColor = isCritical
               ? 'bg-red-100 text-red-800 border-red-300'
-              : isHigh
-              ? 'bg-red-50 text-red-700 border-red-200'
-              : riskCat === 'MEDIUM'
-              ? 'bg-amber-50 text-amber-800 border-amber-200'
-              : 'bg-emerald-50 text-emerald-800 border-emerald-200';
+              : riskCat === 'HIGH'
+              ? 'bg-orange-100 text-orange-800 border-orange-200'
+              : isMedium
+              ? 'bg-amber-100 text-amber-800 border-amber-200'
+              : 'bg-emerald-100 text-emerald-800 border-emerald-200';
 
             return (
               <div
@@ -402,8 +403,8 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ onSelectProject, onB
                   {/* Card Header: ID & Risk Badge */}
                   <div className="flex justify-between items-start">
                     <div className="flex items-center space-x-1.5">
-                      <span className={`text-xs ${isHigh ? 'text-red-600' : 'text-emerald-600'}`}>
-                        {isHigh ? '⚠' : '✓'}
+                      <span className={`text-xs ${isHigh ? 'text-red-600' : isMedium ? 'text-amber-600' : 'text-emerald-600'}`}>
+                        {isHigh ? '⚠' : isMedium ? '●' : '✓'}
                       </span>
                       <span className="font-mono text-xs font-bold text-slate-800">
                         {project.id}
@@ -497,9 +498,9 @@ export const ProjectsPage: React.FC<ProjectsPageProps> = ({ onSelectProject, onB
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                 {projects.map((project) => {
-                  const riskCat = project.latest_prediction?.risk_category || 'MEDIUM';
-                  const riskScore = project.latest_prediction?.risk_score ?? 5.0;
-                  const delayProb = project.latest_prediction?.delay_probability ?? 0.5;
+                  const riskCat = project.latest_prediction?.risk_category || (project as any).risk_category || 'LOW';
+                  const riskScore = project.latest_prediction?.risk_score ?? (project as any).risk_score ?? 0;
+                  const delayProb = project.latest_prediction?.delay_probability ?? (project as any).delay_probability ?? 0;
 
                   const badgeColor = riskCat === 'CRITICAL'
                     ? 'bg-red-100 text-red-800'

@@ -292,7 +292,24 @@ export const api = {
       const pageSize = params?.page_size || 24;
       const totalPages = Math.ceil(total / pageSize) || 1;
       const start = (page - 1) * pageSize;
-      const items = list.slice(start, start + pageSize);
+      const items = list.slice(start, start + pageSize).map(p => ({
+        ...p,
+        risk_category: p.risk_category || p.latest_prediction?.risk_category,
+        risk_score: p.risk_score ?? p.latest_prediction?.risk_score,
+        delay_probability: p.delay_probability ?? p.latest_prediction?.delay_probability,
+        latest_prediction: p.latest_prediction || {
+          project_id: p.id,
+          delay_probability: p.delay_probability ?? 0.5,
+          risk_score: p.risk_score ?? 5.0,
+          risk_category: p.risk_category ?? 'LOW',
+          predicted_delay_days: p.predicted_delay_days ?? 30,
+          confidence_score: p.confidence_score ?? 0.85,
+          risk_30d: (p.delay_probability || 0.5) * 0.4,
+          risk_60d: (p.delay_probability || 0.5) * 0.7,
+          risk_90d: p.delay_probability || 0.5,
+          model_version: "v1.0.0-rf"
+        }
+      }));
 
       return { items, total, page, total_pages: totalPages };
     }
@@ -300,11 +317,40 @@ export const api = {
 
   getProjectDetail: async (projectId: string): Promise<Project> => {
     try {
-      return await request(`/projects/${projectId}`);
+      const res = (await request(`/projects/${projectId}`)) as any;
+      if (res && res.id) {
+        if (!res.risk_category && res.latest_prediction?.risk_category) {
+          res.risk_category = res.latest_prediction.risk_category;
+        }
+        if (res.risk_score === undefined && res.latest_prediction?.risk_score !== undefined) {
+          res.risk_score = res.latest_prediction.risk_score;
+        }
+        if (res.delay_probability === undefined && res.latest_prediction?.delay_probability !== undefined) {
+          res.delay_probability = res.latest_prediction.delay_probability;
+        }
+      }
+      return res as Project;
     } catch {
       const found = (DEMO_PROJECTS as unknown as Project[]).find(p => p.id === projectId);
-      if (found) return found;
-      return (DEMO_PROJECTS[0] as unknown as Project);
+      const target = found || (DEMO_PROJECTS[0] as unknown as Project);
+      return {
+        ...target,
+        risk_category: target.risk_category || target.latest_prediction?.risk_category,
+        risk_score: target.risk_score ?? target.latest_prediction?.risk_score,
+        delay_probability: target.delay_probability ?? target.latest_prediction?.delay_probability,
+        latest_prediction: target.latest_prediction || {
+          project_id: target.id,
+          delay_probability: target.delay_probability ?? 0.5,
+          risk_score: target.risk_score ?? 5.0,
+          risk_category: target.risk_category ?? 'LOW',
+          predicted_delay_days: target.predicted_delay_days ?? 30,
+          confidence_score: target.confidence_score ?? 0.85,
+          risk_30d: (target.delay_probability || 0.5) * 0.4,
+          risk_60d: (target.delay_probability || 0.5) * 0.7,
+          risk_90d: target.delay_probability || 0.5,
+          model_version: "v1.0.0-rf"
+        }
+      };
     }
   },
 
